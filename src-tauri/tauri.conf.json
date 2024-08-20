@@ -1,7 +1,7 @@
 {
   "productName": "manga_bookmark_reader",
   "version": "0.1.0",
-  "identifier": "com.manga_bookmark_reader.app",
+  "identifier": "com.manga-bookmark-reader.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -11,7 +11,7 @@
   "app": {
     "windows": [
       {
-        "title": "manga_bookmark_reader",
+        "title": "manga bookmark reader",
         "width": 800,
         "height": 600,
         "decorations": false,
