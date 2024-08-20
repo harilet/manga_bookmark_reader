@@ -1,7 +1,7 @@
 mod utils;
 
 use serde_json::Value;
-use std::thread;
+use std::thread::{self, JoinHandle};
 use tauri::async_runtime::block_on;
 use tauri::{async_runtime::spawn, AppHandle};
 use tauri::{Emitter, Listener, Manager};
@@ -43,12 +43,13 @@ pub fn run() {
 async fn get_manga(app_handle: AppHandle) {
     let mut index = 0;
     let data = read_bookmark();
+    let mut threads:Vec<JoinHandle<()>> = vec![];
     app_handle
         .emit("scan_data", PayloadMangaSize { size: data.len() })
         .unwrap();
     for i in data {
         let app_handle_2 = app_handle.app_handle().to_owned();
-        thread::spawn(move || {
+        let temp_thread=thread::spawn(move || {
             block_on(async {
                 let response = get_html(&i.url).await;
                 let dt = convert_date(i.date_added.clone());
@@ -65,7 +66,11 @@ async fn get_manga(app_handle: AppHandle) {
                 app_handle_2.emit("scan_data", payload).unwrap();
             })
         });
+        threads.push(temp_thread);
         index += 1;
+    }
+    for thread in threads{
+        thread.join().unwrap();
     }
     app_handle.emit("scan_data", "done").unwrap();
 }

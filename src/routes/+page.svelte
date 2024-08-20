@@ -17,18 +17,22 @@
 
   let sort = "Default";
 
+  let mangaFiltered: any[];
+
+  let mangaSortedAndFiltered: any[];
+
   $: listLength = list.length;
 
-  $: mangaShowList = list.filter((x) => {
-    if (!toggled) {
-      return x["remaining_chapters"] > 0;
-    } else {
-      return true;
-    }
-  });
-
   $: {
-    mangaShowList = mangaShowList.sort((a, b) => {
+    mangaFiltered = list.filter((x) => {
+      if (!toggled) {
+        return x["remaining_chapters"] > 0;
+      } else {
+        return true;
+      }
+    });
+
+    mangaSortedAndFiltered = mangaFiltered.toSorted((a, b) => {
       if (sort == "Index") {
         return a["index"] - b["index"];
       } else if (sort == "Remaining") {
@@ -37,6 +41,7 @@
       return 0;
     });
   }
+
 
   onMount(async () => {
     await listen("scan_data", (event) => {
@@ -97,7 +102,7 @@
       </div>
     </div>
     <div class="main-scrollbar manga-list">
-      {#each mangaShowList as manga}
+      {#each mangaSortedAndFiltered as manga}
         <Manga propValue="{manga}"></Manga>
       {/each}
     </div>
