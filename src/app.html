@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/augmented-ui@2/augmented-ui.min.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tauri + SvelteKit + Typescript App</title>
+  %sveltekit.head%
+  <style>
+    :root {
+      --primary-color: cyan;
+      --primary-disabled-color: #006969;
+      --background-color: black;
+      --warning-color: yellow;
+      --done-color: #00ff3c;
+      --in-progress-color: #ff9d00;
+    }
+
+    .main-scrollbar {
+      scrollbar-color: var(--background-color) var(--primary-color);
+      scrollbar-width: thin;
+    }
+
+    .body {
+      background: var(--background-color);
+      margin: 0px;
+      border: solid 1px var(--primary-color);
+    }
+
+    .font-style {
+      font-family: "Orbitron", sans-serif;
+      font-optical-sizing: auto;
+      font-weight: 400;
+      font-style: normal;
+      font-size: small;
+    }
+
+    .app {
+      display: contents
+    }
+  </style>
+</head>
+
+<body data-sveltekit-preload-data="hover" class="body font-style">
+  <div class="app">%sveltekit.body%</div>
+</body>
+
+</html>
