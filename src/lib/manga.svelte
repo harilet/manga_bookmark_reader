@@ -5,7 +5,6 @@
   export let propValue: any;
 
   let borderClass = "";
-  let wrapperClass = "";
   let reTrigger = false;
 
   $: {
@@ -16,10 +15,8 @@
   async function setClasses() {
     if (await dataStore.get(getUrlWithoutChapter())) {
       borderClass = "warning-class";
-      wrapperClass = "warning-class-wrapper";
     } else {
       borderClass = "normal-class";
-      wrapperClass = "normal-class-wrapper";
     }
   }
 
@@ -45,9 +42,7 @@
   }
 </script>
 
-<div class="{wrapperClass} wrapper-class">
   <button
-    data-augmented-ui="tr-clip-x tl-clip bl-clip-x"
     on:click="{openUrl}"
     class="main-manga-area {borderClass} font-style"
   >
@@ -70,14 +65,12 @@
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         on:click="{setChapterWarning}"
-        data-augmented-ui="tl-clip"
         class="warning-button"
       >
         &nbsp;
       </div>
     </div>
   </button>
-</div>
 
 <style>
   .main-manga-area {
@@ -86,17 +79,14 @@
     padding: 0px;
     padding-left: 5px;
     position: relative;
-    width: 100%;
-    color: var(--cds-text-01);
-    border: none;
-    background: var(--background-color);
+    background: transparent;
     text-align: start;
     display: flex;
     flex-direction: column;
     align-items: center;
-    --aug-border-all: 2px;
-    height: 100%;
     justify-content: space-between;
+    flex-grow: 1;
+    border-radius: 0px;
   }
 
   .wrapper-class {
@@ -104,21 +94,14 @@
     flex: auto;
   }
 
-  .warning-class-wrapper {
-    background: var(--warning-color);
-  }
-
-  .normal-class-wrapper {
-    background: var(--primary-color);
-    color: var(--primary-color);
-  }
-
   .warning-class {
     color: var(--warning-color);
+    border: solid 1px var(--warning-color);
   }
 
   .normal-class {
-    --aug-border-bg: var(--primary-color);
+    color: var(--primary-color);
+    border: solid 1px var(--primary-color);
   }
 
   .index-date {
@@ -155,7 +138,6 @@
 
   .warning-button {
     width: 40px;
-    --aug-all-height: 5vh;
     background: repeating-linear-gradient(
       90deg,
       var(--warning-color),

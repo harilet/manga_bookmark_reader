@@ -1,6 +1,7 @@
 mod utils;
 
 use serde_json::Value;
+use tauri::window::{Effect, EffectsBuilder};
 use std::thread::{self, JoinHandle};
 use tauri::async_runtime::block_on;
 use tauri::{async_runtime::spawn, AppHandle};
@@ -27,6 +28,12 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
+            let main_window = app.get_webview_window("main").unwrap();
+            main_window.set_effects(
+                EffectsBuilder::new()
+                .effect(Effect::MicaDark)
+                .build(),
+            ).unwrap();
             let app_handle = app.handle().to_owned();
             app.listen("start_scan", move |event| {
                 let payload: Value = serde_json::from_str(event.payload()).unwrap();

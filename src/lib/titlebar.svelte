@@ -16,8 +16,7 @@
   }
 </script>
 
-<div data-tauri-drag-region class="title-bar-wrapper">
-  <div data-augmented-ui="bl-2-clip-x" data-tauri-drag-region class="title-bar">
+  <div data-tauri-drag-region class="title-bar">
     <button class="hvrBgDark" on:click="{onClickReduce}">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -70,23 +69,12 @@
       </svg>
     </button>
   </div>
-</div>
 
 <style>
-  .title-bar-wrapper {
-    background: var(--primary-color);
-    height: 100%;
-    padding-bottom: 2px;
-  }
-
   .title-bar {
     display: flex;
     justify-content: end;
     height: 100%;
-    background: var(--background-color);
-    --aug-border-all: 0px;
-    --aug-border-bottom: 2px;
-    --aug-border-bg: var(--primary-color);
   }
 
   .hvrBgDark {

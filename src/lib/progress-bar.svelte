@@ -14,9 +14,9 @@
 </script>
 
 <div class="progress-area-wrapper">
-  <div data-augmented-ui="tl-clip t-clip-x br-clip" class="progress-area">
+  <div data-augmented-ui="bl-clip t-clip-x br-clip" class="progress-area">
     <progress
-      data-augmented-ui="tl-clip t-clip-x br-clip"
+      data-augmented-ui="bl-clip t-clip-x br-clip"
       class="progress {progress_bar_class}"
       {value}
       {max}
@@ -33,13 +33,11 @@
 
 <style>
   .progress-area-wrapper {
-    background: var(--primary-color);
     padding: 1px;
   }
 
   .progress-area {
     display: flex;
-    background: var(--background-color);
     padding: 4px 2px;
     justify-content: space-evenly;
   }
@@ -57,6 +55,13 @@
     width: 100%;
     border-radius: 0px;
     height: 20px;
+    background: repeating-linear-gradient(
+      90deg,
+      grey,
+      grey 1px,
+      var(--background-color) 1px,
+      var(--background-color) 3px
+    );
   }
 
   .in_progress::-webkit-progress-value {

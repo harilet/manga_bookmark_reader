@@ -42,7 +42,6 @@
     });
   }
 
-
   onMount(async () => {
     await listen("scan_data", (event) => {
       if (event.payload == "done") {
@@ -79,27 +78,20 @@
   </div>
 
   <div class="main-area">
-    <div class="side-bar-wrapper">
-      <div
-        class="side-bar"
-        data-augmented-ui="tl-clip tr-2-clip-y br-clip bl-clip-x"
-      >
-        <div></div>
-        <div style="width: 100%;">
-          <Dropdown bind:sort />
-          <Toggle bind:toggled />
-        </div>
-
-        <button
-          data-augmented-ui="bl-clip-x br-clip"
-          class="fetch-button font-style {disabled
-            ? 'fetch-button-disabled'
-            : 'fetch-button-enabled'}"
-          on:click="{eventEmit}"
-        >
-          Fetch
-        </button>
+    <div class="side-bar">
+      <div style="width: 100%;">
+        <Dropdown bind:sort />
+        <Toggle bind:toggled />
       </div>
+
+      <button
+        class="fetch-button font-style {disabled
+          ? 'fetch-button-disabled'
+          : 'fetch-button-enabled'}"
+        on:click="{eventEmit}"
+      >
+        Fetch
+      </button>
     </div>
     <div class="main-scrollbar manga-list">
       {#each mangaSortedAndFiltered as manga}
@@ -125,18 +117,8 @@
     height: calc(100vh - 90px);
   }
 
-  .side-bar-wrapper {
-    background: var(--primary-color);
-    padding: 2px;
-    padding-bottom: 0px;
-    padding-left: 0px;
-  }
-
   .side-bar {
-    --aug-border-bg: var(--primary-color);
-    --aug-border-all: 2px;
-    background: var(--background-color);
-    height: -webkit-fill-available;
+    height: auto;
     width: 220px;
     display: flex;
     justify-content: space-between;
@@ -147,11 +129,8 @@
   }
 
   .manga-list {
-    background: var(--background-color);
     overflow: auto;
-    height: calc(100% - 2px);
     width: 90%;
-    border-top: 2px solid var(--primary-color);
     display: flex;
     flex-wrap: wrap;
     align-content: baseline;

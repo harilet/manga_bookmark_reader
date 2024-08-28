@@ -13,10 +13,8 @@
 </script>
 
 <div class="dropdown">
-  <button on:click="{dropdownBtnClicked}" class="dropbtn-wrapper">
-    <div data-augmented-ui="tr-2-clip-x bl-clip-x" class="dropbtn">
-      {sort}
-    </div>
+  <button on:click="{dropdownBtnClicked}" class="dropbtn">
+    {sort}
   </button>
   {#if showDropDown}
     <div class="dropdown-content">
@@ -32,22 +30,17 @@
     width: 100%;
   }
 
-  .dropbtn-wrapper {
-    padding: 1px;
-    background: var(--primary-color);
-    width: 100%;
-    border: none;
-  }
   .dropbtn {
     width: 100%;
     background: var(--background-color);
     color: var(--primary-color);
-    border: none;
+    border: solid 1px var(--primary-color);
     height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
+
   .dropdown-content {
     width: calc(100% - 6px);
     position: absolute;
