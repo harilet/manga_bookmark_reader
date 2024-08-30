@@ -94,9 +94,13 @@
       </button>
     </div>
     <div class="main-scrollbar manga-list">
-      {#each mangaSortedAndFiltered as manga}
-        <Manga propValue="{manga}"></Manga>
-      {/each}
+      {#key toggled}
+        {#key sort}
+          {#each mangaSortedAndFiltered as manga}
+            <Manga propValue="{manga}"></Manga>
+          {/each}
+        {/key}
+      {/key}
     </div>
   </div>
 </div>
