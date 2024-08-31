@@ -31,7 +31,7 @@ pub fn run() {
             let main_window = app.get_webview_window("main").unwrap();
             main_window.set_effects(
                 EffectsBuilder::new()
-                .effect(Effect::MicaDark)
+                .effect(Effect::Acrylic)
                 .build(),
             ).unwrap();
             let app_handle = app.handle().to_owned();
