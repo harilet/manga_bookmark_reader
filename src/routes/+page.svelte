@@ -52,6 +52,7 @@
           disabled = true;
           totalSize = data["size"];
           list = [];
+          sort = "Default";
         } else if (data["name"]) {
           list = [...list, data];
         }
