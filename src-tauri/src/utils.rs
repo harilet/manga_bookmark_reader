@@ -12,7 +12,7 @@ pub(crate) struct BookmarkData {
 
 pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
     let mut result_data: Vec<BookmarkData> = vec![];
-    let contents = fs::read_to_string("C:\\Users\\mymai\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Bookmarks")
+    let contents = fs::read_to_string("C:\\Users\\Asus\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Bookmarks")
     .expect("Should have been able to read the file");
 
     let object: Value = serde_json::from_str(&contents).unwrap();
