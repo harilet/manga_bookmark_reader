@@ -75,21 +75,27 @@
 
 <div class="app">
   <div class="top-progress-bar-area">
-    <ProgressBar value="{listLength}" max="{totalSize}" />
+    <ProgressBar value={listLength} max={totalSize} />
   </div>
 
   <div class="main-area">
-    <div class="side-bar">
-      <div style="width: 100%;">
+    <div class="side-bar"
+    >
+      <div style="width: 150px;">
         <Dropdown bind:sort />
+      </div>
+      <div style="width: 150px;margin-left: 20px;">
         <Toggle bind:toggled />
       </div>
 
       <button
+        data-augmented-ui="
+      bl-2-clip-x tl-clip
+    "
         class="fetch-button font-style {disabled
           ? 'fetch-button-disabled'
           : 'fetch-button-enabled'}"
-        on:click="{eventEmit}"
+        on:click={eventEmit}
       >
         Fetch
       </button>
@@ -98,7 +104,7 @@
       {#key toggled}
         {#key sort}
           {#each mangaSortedAndFiltered as manga}
-            <Manga propValue="{manga}"></Manga>
+            <Manga propValue={manga}></Manga>
           {/each}
         {/key}
       {/key}
@@ -119,23 +125,24 @@
 
   .main-area {
     display: flex;
-    height: calc(100vh - 90px);
+    flex-direction: column;
+    height: calc(100vh - 88px);
   }
 
   .side-bar {
     height: auto;
-    width: 220px;
+    width: 100%;
     display: flex;
-    justify-content: space-between;
-    align-items: end;
-    flex-direction: column;
-    padding: 3px;
+    align-items: center;
+    flex-direction: row;
     position: relative;
+    --aug-border-all: 1px;
+    --aug-border-bg: rgb(255 255 255 / 0.1);
   }
 
   .manga-list {
     overflow: auto;
-    width: 90%;
+    width: 100%;
     display: flex;
     flex-wrap: wrap;
     align-content: baseline;
@@ -143,9 +150,10 @@
 
   .fetch-button {
     color: var(--background-color);
-    width: 100%;
+    width: 200px;
     border: none;
     height: 60px;
+    margin-left: auto;
   }
 
   .fetch-button-enabled {

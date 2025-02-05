@@ -72,8 +72,6 @@ async fn get_manga(app_handle: AppHandle) {
             block_on(async {
                 loop {
                     let i = queue.pop().await;
-                    println!("{}:{}",_worker,i.index);
-
                     let response = get_html(&i.url).await;
                     let dt = convert_date(i.date_added.clone());
                     let mut payload = Payload {

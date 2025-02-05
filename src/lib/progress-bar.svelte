@@ -44,7 +44,7 @@
     padding: 4px 2px;
     justify-content: space-evenly;
     --aug-border-all: 1px;
-    --aug-border-bg: cyan;
+    --aug-border-bg: var(--primary-color);
   }
 
   .progress-test {

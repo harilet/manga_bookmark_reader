@@ -42,37 +42,45 @@
   }
 </script>
 
-  <button
-    on:click="{openUrl}"
+<button on:click={openUrl} class="button-wrappper">
+  <div
+    data-augmented-ui="
+      tr-2-clip-x bl-2-clip-x tl-2-clip-x
+    "
     class="main-manga-area {borderClass} font-style"
   >
     <div class="index-date">
-      <div>
-        {propValue["index"]}
+      <div class="name">
+        {propValue["name"]}
       </div>
       <div class="date-time">
         {propValue["date_time"]}
       </div>
     </div>
-    <div class="name">
-      {propValue["name"]}
-    </div>
+
     <div class="remaining-chapter">
       <div class="remaining-chapter-text">
         {propValue["remaining_chapters"]}
       </div>
+    </div>
+    <div
+      style="width: 100%;
+    display: flex;
+    justify-content: end;"
+    >
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        on:click="{setChapterWarning}"
-        class="warning-button"
-      >
-        &nbsp;
-      </div>
+      <div on:click={setChapterWarning} class="warning-button">&nbsp;</div>
     </div>
-  </button>
+  </div>
+</button>
 
 <style>
+  .button-wrappper {
+    flex-grow: 1;
+    padding: 0px;
+    border: none;
+  }
   .main-manga-area {
     border-radius: 5px;
     cursor: pointer;
@@ -85,7 +93,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    flex-grow: 1;
     border-radius: 0px;
   }
 
@@ -95,27 +102,44 @@
   }
 
   .warning-class {
-    color: var(--warning-color);
-    border: solid 1px var(--warning-color);
+    color: var(--primary-color);
+    border: solid 1px rgb(255 255 255 / 0.1);
+    text-shadow:
+      2px 2px 0 #000000,
+      2px -2px 0 #000000,
+      -2px 2px 0 #000000,
+      -2px -2px 0 #000000,
+      2px 0px 0 #000000,
+      0px 2px 0 #000000,
+      -2px 0px 0 #000000,
+      0px -2px 0 #000000;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--primary-color),
+      var(--primary-color) 1px,
+      var(--background-color) 1px,
+      var(--background-color) 3px
+    );
   }
 
   .normal-class {
     color: var(--primary-color);
-    border: solid 1px var(--primary-color);
+    border: solid 1px rgb(255 255 255 / 0.1);
+    background: var(--background-color);
   }
 
   .index-date {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     padding-right: 5px;
     margin-top: 20px;
-    color: gray;
     width: -webkit-fill-available;
   }
 
   .date-time {
     margin-top: 5px;
+    color: gray;
   }
 
   .name {
@@ -133,17 +157,23 @@
   }
 
   .remaining-chapter-text {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    color: gray;
   }
 
-  .warning-button {
+  .normal-class .warning-button {
     width: 40px;
     background: repeating-linear-gradient(
       90deg,
-      var(--warning-color),
-      var(--warning-color) 1px,
-      transparent 1px,
-      transparent 3px
+      var(--primary-color),
+      var(--primary-color) 1px,
+      var(--background-color) 1px,
+      var(--background-color) 3px
     );
+  }
+
+  .warning-class .warning-button {
+    width: 40px;
+    background: var(--background-color);
   }
 </style>

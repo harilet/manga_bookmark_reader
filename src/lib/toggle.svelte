@@ -26,9 +26,9 @@
 <style>
   .toggle {
     width: 100%;
-    margin-top: 1vh;
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
 
   .label {
