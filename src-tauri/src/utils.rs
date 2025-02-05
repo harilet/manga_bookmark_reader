@@ -8,6 +8,7 @@ pub(crate) struct BookmarkData {
     pub(crate) url: String,
     pub(crate) name: String,
     pub(crate) date_added: String,
+    pub(crate) index: usize,
 }
 
 pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
@@ -25,9 +26,10 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
         .get("children")
         .unwrap();
 
-    for i in data.as_array().unwrap() {
-        if i.get("name").unwrap() == "anime" {
-            let all_anime = i.get("children").unwrap().as_array().unwrap();
+    for value in data.as_array().unwrap() {
+        if value.get("name").unwrap() == "anime" {
+            let all_anime = value.get("children").unwrap().as_array().unwrap();
+            let mut index = 0;
 
             for j in all_anime.iter() {
                 if j.get("url")
@@ -36,11 +38,13 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
                     .unwrap()
                     .contains("chapmanganato")
                 {
+                    index += 1;
                     result_data.push(BookmarkData {
                         name: j.get("name").unwrap().as_str().unwrap().to_string(),
                         url: j.get("url").unwrap().as_str().unwrap().to_string(),
                         date_added: j.get("date_added").unwrap().as_str().unwrap().to_string(),
-                    })
+                        index: index,
+                    });
                 }
             }
             break;
