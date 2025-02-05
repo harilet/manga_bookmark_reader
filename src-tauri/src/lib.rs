@@ -23,9 +23,10 @@ struct PayloadMangaSize {
     size: usize,
 }
 
-const WORKER_COUNT: usize = 10;
+const WORKER_COUNT: usize = 8;
 
 type TaskQueue = deadqueue::limited::Queue<BookmarkData>;
+type CompleteQueue = deadqueue::limited::Queue<usize>;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -52,45 +53,57 @@ pub fn run() {
 
 async fn get_manga(app_handle: AppHandle) {
     let data = read_bookmark();
+    let mut index = 0;
 
     let task_count = data.len();
 
     let queue = Arc::new(TaskQueue::new(task_count));
+    let complete_queue = Arc::new(CompleteQueue::new(task_count));
 
     app_handle
         .emit("scan_data", PayloadMangaSize { size: data.len() })
         .unwrap();
 
-    for i in 0..task_count {
-        queue.try_push(data[i].clone()).unwrap();
-    }
+    loop {
+        while complete_queue.len() < WORKER_COUNT
+            && queue.len() < WORKER_COUNT
+            && index < task_count
+        {
+            queue.try_push(data[index].clone()).unwrap();
+            complete_queue.try_push(index).unwrap();
+            index += 1;
+        }
+        if queue.len() > 0 && complete_queue.len() > 0 {
+            let queue = queue.clone();
+            let complete_queue = complete_queue.clone();
+            let app_handle_2 = app_handle.app_handle().to_owned();
+            thread::spawn(move || {
+                block_on(async {
+                    loop {
+                        let i = queue.pop().await;
 
-    for _worker in 0..WORKER_COUNT {
-        let queue = queue.clone();
-        let app_handle_2 = app_handle.app_handle().to_owned();
-        thread::spawn(move || {
-            block_on(async {
-                loop {
-                    let i = queue.pop().await;
-                    let response = get_html(&i.url).await;
-                    let dt = convert_date(i.date_added.clone());
-                    let mut payload = Payload {
-                        index: i.index,
-                        name: i.name.clone(),
-                        date_time: dt.to_string(),
-                        remaining_chapters: 0.to_string(),
-                        url: i.url.clone(),
-                    };
-                    if response.contains("navi-change-chapter-btn-next") {
-                        payload.remaining_chapters = get_remaining_chapters(response.clone());
+                        let response = get_html(&i.url).await;
+                        let dt = convert_date(i.date_added.clone());
+                        let mut payload = Payload {
+                            index: i.index,
+                            name: i.name.clone(),
+                            date_time: dt.to_string(),
+                            remaining_chapters: 0.to_string(),
+                            url: i.url.clone(),
+                        };
+                        if response.contains("navi-change-chapter-btn-next") {
+                            payload.remaining_chapters = get_remaining_chapters(response.clone());
+                        }
+                        app_handle_2.emit("scan_data", payload).unwrap();
+                        complete_queue.pop().await;
                     }
-                    app_handle_2.emit("scan_data", payload).unwrap();
-                }
-            })
-        });
+                })
+            });
+        }
+        if index == task_count && queue.len() == 0 && complete_queue.len() == 0 {
+            break;
+        }
     }
-
-    while queue.len() > 0 {}
 
     app_handle.emit("scan_data", "done").unwrap();
 }
