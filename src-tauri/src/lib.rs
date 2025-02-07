@@ -73,7 +73,7 @@ async fn get_manga(app_handle: AppHandle) {
             complete_queue.try_push(index).unwrap();
             index += 1;
         }
-        if queue.len() > 0 && complete_queue.len() > 0 {
+        while queue.len() > 0 && complete_queue.len() > 0 {
             let queue = queue.clone();
             let complete_queue = complete_queue.clone();
             let app_handle_2 = app_handle.app_handle().to_owned();
