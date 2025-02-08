@@ -70,7 +70,7 @@ async fn get_manga(app_handle: AppHandle) {
                 .emit("threads", format!("{}/{}", prev_thread_count, WORKER_COUNT))
                 .unwrap();
         }
-        if complete_queue.len() < WORKER_COUNT && index < task_count {
+        while complete_queue.len() < WORKER_COUNT && index < task_count {
             let i = data[index].clone();
 
             complete_queue.try_push(i.index).unwrap();
