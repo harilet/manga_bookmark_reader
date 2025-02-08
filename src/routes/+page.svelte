@@ -61,6 +61,7 @@
         }
       }
     });
+    emit("get_threads");
     await listen("threads", (event) => {
       let data:string[]=String(event.payload).split('/');
       activeThread=parseInt(data[0]);

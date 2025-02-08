@@ -31,9 +31,15 @@
 </div>
 
 <div class="progress-test">
-  <div>
-    <progress class="thread-progress" value={threadValue} max={maxThread}
-    ></progress>
+  <div style="display: flex;">
+    {#each [...Array(maxThread).keys()] as i (i)}
+      <div
+        class="thread-box"
+        style="--fill: {threadValue <= i ? 'transparent' : 'white'};"
+      >
+        <span></span>
+      </div>
+    {/each}
   </div>
 
   <div>
@@ -42,6 +48,16 @@
 </div>
 
 <style>
+  .thread-box {
+    flex: 1;
+    transition: opacity 0.3s ease;
+    background-color: var(--fill);
+    border: solid 1px rgb(255 255 255 / 0.1);
+    width: 10px;
+    height: 10px;
+    margin: 0px 1px;
+  }
+
   .progress-area-wrapper {
     padding: 1px;
   }
