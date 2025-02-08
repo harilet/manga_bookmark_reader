@@ -1,6 +1,8 @@
 <script lang="ts">
   export let value = 0;
   export let max = 0;
+  export let threadValue = 0;
+  export let maxThread = 0;
 
   let progress_bar_class = "";
 
@@ -30,6 +32,11 @@
 
 <div class="progress-test">
   <div>
+    <progress class="thread-progress" value={threadValue} max={maxThread}
+    ></progress>
+  </div>
+
+  <div>
     {value} of {max}
   </div>
 </div>
@@ -48,11 +55,10 @@
   }
 
   .progress-test {
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding: 5px;
     display: flex;
     align-items: center;
-    justify-content: space-around;
+    justify-content: space-between;
     color: var(--primary-color);
   }
 
@@ -82,5 +88,18 @@
   }
   .progress[value]::-webkit-progress-bar {
     background-color: transparent;
+  }
+
+  .thread-progress {
+    background: transparent;
+    border: solid 1px rgb(255 255 255 / 0.1);
+  }
+
+  .thread-progress[value]::-webkit-progress-bar {
+    background-color: transparent;
+  }
+
+  .thread-progress::-webkit-progress-value {
+    background: var(--done-color);
   }
 </style>

@@ -21,6 +21,9 @@
 
   let mangaSortedAndFiltered: any[];
 
+  $: threadCount=0;
+  $: activeThread=0;
+
   $: listLength = list.length;
 
   $: {
@@ -58,6 +61,11 @@
         }
       }
     });
+    await listen("threads", (event) => {
+      let data:string[]=String(event.payload).split('/');
+      activeThread=parseInt(data[0]);
+      threadCount=parseInt(data[1]);
+    });
   });
 
   function eventEmit() {
@@ -75,12 +83,11 @@
 
 <div class="app">
   <div class="top-progress-bar-area">
-    <ProgressBar value={listLength} max={totalSize} />
+    <ProgressBar value={listLength} max={totalSize} threadValue={activeThread} maxThread={threadCount}/>
   </div>
 
   <div class="main-area">
-    <div class="side-bar"
-    >
+    <div class="side-bar">
       <div style="width: 150px;">
         <Dropdown bind:sort />
       </div>
@@ -90,8 +97,8 @@
 
       <button
         data-augmented-ui="
-      bl-2-clip-x tl-clip
-    "
+          bl-2-clip-x tl-clip
+        "
         class="fetch-button font-style {disabled
           ? 'fetch-button-disabled'
           : 'fetch-button-enabled'}"
@@ -136,8 +143,7 @@
     align-items: center;
     flex-direction: row;
     position: relative;
-    --aug-border-all: 1px;
-    --aug-border-bg: rgb(255 255 255 / 0.1);
+    border-top: solid 1px rgb(255 255 255 / 0.1);
   }
 
   .manga-list {

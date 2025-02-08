@@ -7,7 +7,7 @@ use tauri::async_runtime::block_on;
 use tauri::window::{Effect, EffectsBuilder};
 use tauri::{async_runtime::spawn, AppHandle};
 use tauri::{Emitter, Listener, Manager};
-use utils::{convert_date, get_html, get_remaining_chapters, read_bookmark, BookmarkData};
+use utils::{convert_date, get_html, get_remaining_chapters, read_bookmark};
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -25,7 +25,6 @@ struct PayloadMangaSize {
 
 const WORKER_COUNT: usize = 8;
 
-type TaskQueue = deadqueue::limited::Queue<BookmarkData>;
 type CompleteQueue = deadqueue::limited::Queue<usize>;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -57,50 +56,51 @@ async fn get_manga(app_handle: AppHandle) {
 
     let task_count = data.len();
 
-    let queue = Arc::new(TaskQueue::new(task_count));
     let complete_queue = Arc::new(CompleteQueue::new(task_count));
 
     app_handle
         .emit("scan_data", PayloadMangaSize { size: data.len() })
         .unwrap();
 
+    let mut prev_thread_count = 0;
     loop {
-        while complete_queue.len() < WORKER_COUNT
-            && queue.len() < WORKER_COUNT
-            && index < task_count
-        {
-            queue.try_push(data[index].clone()).unwrap();
-            complete_queue.try_push(index).unwrap();
-            index += 1;
+        if prev_thread_count != complete_queue.len() {
+            prev_thread_count = complete_queue.len();
+            app_handle
+                .emit("threads", format!("{}/{}", prev_thread_count, WORKER_COUNT))
+                .unwrap();
         }
-        while queue.len() > 0 && complete_queue.len() > 0 {
-            let queue = queue.clone();
+        if complete_queue.len() < WORKER_COUNT && index < task_count {
+            let i = data[index].clone();
+
+            complete_queue.try_push(i.index).unwrap();
+            index += 1;
+
             let complete_queue = complete_queue.clone();
             let app_handle_2 = app_handle.app_handle().to_owned();
             thread::spawn(move || {
                 block_on(async {
-                    loop {
-                        let i = queue.pop().await;
-
-                        let response = get_html(&i.url).await;
-                        let dt = convert_date(i.date_added.clone());
-                        let mut payload = Payload {
-                            index: i.index,
-                            name: i.name.clone(),
-                            date_time: dt.to_string(),
-                            remaining_chapters: 0.to_string(),
-                            url: i.url.clone(),
-                        };
-                        if response.contains("navi-change-chapter-btn-next") {
-                            payload.remaining_chapters = get_remaining_chapters(response.clone());
-                        }
-                        app_handle_2.emit("scan_data", payload).unwrap();
-                        complete_queue.pop().await;
+                    let response = get_html(&i.url).await;
+                    let dt = convert_date(i.date_added.clone());
+                    let mut payload = Payload {
+                        index: i.index,
+                        name: i.name.clone(),
+                        date_time: dt.to_string(),
+                        remaining_chapters: 0.to_string(),
+                        url: i.url.clone(),
+                    };
+                    if response.contains("navi-change-chapter-btn-next") {
+                        payload.remaining_chapters = get_remaining_chapters(response.clone());
                     }
+                    app_handle_2.emit("scan_data", payload).unwrap();
+                    complete_queue.pop().await;
                 })
             });
         }
-        if index == task_count && queue.len() == 0 && complete_queue.len() == 0 {
+        if index == task_count && complete_queue.len() == 0 {
+            app_handle
+                .emit("threads", format!("{}/{}", 0, WORKER_COUNT))
+                .unwrap();
             break;
         }
     }

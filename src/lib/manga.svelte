@@ -45,7 +45,7 @@
 <button on:click={openUrl} class="button-wrappper">
   <div
     data-augmented-ui="
-      tr-2-clip-x bl-2-clip-x tl-2-clip-x
+      tr-2-clip-x tl-2-clip-x
     "
     class="main-manga-area {borderClass} font-style"
   >
@@ -62,12 +62,6 @@
       <div class="remaining-chapter-text">
         {propValue["remaining_chapters"]}
       </div>
-    </div>
-    <div
-      style="width: 100%;
-    display: flex;
-    justify-content: end;"
-    >
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div on:click={setChapterWarning} class="warning-button">&nbsp;</div>
