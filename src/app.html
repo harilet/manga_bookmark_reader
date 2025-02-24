@@ -21,6 +21,9 @@
       --background-color: #0B1215;
       --done-color: #FFFFFF;
       --in-progress-color: #ffffff80;
+      --border-color: rgb(255 255 255 / 0.1);
+      --border: solid 1px var(--border-color);
+      --secondary-text: grey
     }
 
     .main-scrollbar {
@@ -31,7 +34,7 @@
     .body {
       height: calc(100vh - 2px);
       margin: 0px;
-      border: solid 1px var(--primary-color);
+      border: var(--border);
       background: var(--background-color);
     }
 

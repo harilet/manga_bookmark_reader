@@ -21,7 +21,10 @@
   }
 
   function openUrl() {
-    open(propValue["url"]);
+    let name: string=propValue["name"];
+    let updatedName=(name.slice(0,name.indexOf(" Chapter"))).replaceAll(' ','_');
+    console.log(updatedName)
+    open("https://www.natomanga.com/search/story/"+updatedName);
   }
 
   async function setChapterWarning(event: any) {
@@ -74,6 +77,7 @@
     flex-grow: 1;
     padding: 0px;
     border: none;
+    background: var(--primary-color);
   }
   .main-manga-area {
     border-radius: 5px;
@@ -97,7 +101,7 @@
 
   .warning-class {
     color: var(--primary-color);
-    border: solid 1px rgb(255 255 255 / 0.1);
+    border: var(--border);
     text-shadow:
       2px 2px 0 #000000,
       2px -2px 0 #000000,
@@ -118,7 +122,7 @@
 
   .normal-class {
     color: var(--primary-color);
-    border: solid 1px rgb(255 255 255 / 0.1);
+    border: var(--border);
     background: var(--background-color);
   }
 
@@ -133,7 +137,7 @@
 
   .date-time {
     margin-top: 5px;
-    color: gray;
+    color: var(--secondary-text);
   }
 
   .name {
@@ -152,7 +156,7 @@
 
   .remaining-chapter-text {
     margin-bottom: 10px;
-    color: gray;
+    color: var(--secondary-text);
   }
 
   .normal-class .warning-button {

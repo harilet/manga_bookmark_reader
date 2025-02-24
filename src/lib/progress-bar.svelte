@@ -52,7 +52,7 @@
     flex: 1;
     transition: opacity 0.3s ease;
     background-color: var(--fill);
-    border: solid 1px rgb(255 255 255 / 0.1);
+    border: var(--border);
     width: 10px;
     height: 10px;
     margin: 0px 1px;
@@ -108,7 +108,7 @@
 
   .thread-progress {
     background: transparent;
-    border: solid 1px rgb(255 255 255 / 0.1);
+    border: var(--border);
   }
 
   .thread-progress[value]::-webkit-progress-bar {

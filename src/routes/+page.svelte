@@ -144,7 +144,7 @@
     align-items: center;
     flex-direction: row;
     position: relative;
-    border-top: solid 1px rgb(255 255 255 / 0.1);
+    border-top: var(--border);
   }
 
   .manga-list {

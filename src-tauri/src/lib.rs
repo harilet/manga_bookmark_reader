@@ -91,7 +91,7 @@ async fn get_manga(app_handle: AppHandle) {
                 .stack_size(0)
                 .spawn(move || {
                     block_on(async {
-                        let response = get_html(&i.url).await;
+                        // let response = get_html(&i.url).await;
                         let dt = convert_date(i.date_added.clone());
                         let mut payload = Payload {
                             index: i.index,
@@ -100,9 +100,9 @@ async fn get_manga(app_handle: AppHandle) {
                             remaining_chapters: 0.to_string(),
                             url: i.url.clone(),
                         };
-                        if response.contains("navi-change-chapter-btn-next") {
-                            payload.remaining_chapters = get_remaining_chapters(response.clone());
-                        }
+                        // if response.contains("navi-change-chapter-btn-next") {
+                        //     payload.remaining_chapters = get_remaining_chapters(response.clone());
+                        // }
                         app_handle_2.emit("scan_data", payload).unwrap();
                         _complete_queue.pop().await;
                     })

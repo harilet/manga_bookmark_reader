@@ -37,7 +37,7 @@
     width: 100%;
     background: var(--background-color);
     color: var(--primary-color);
-    border: solid 1px var(--primary-color);
+    border: var(--border);
     height: 30px;
     display: flex;
     align-items: center;
@@ -58,7 +58,7 @@
   }
 
   .dropdown-content button {
-    border: solid 1px var(--primary-color);
+    border: var(--border);
     background: var(--background-color);
     color: var(--primary-color);
   }
