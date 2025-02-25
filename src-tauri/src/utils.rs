@@ -113,7 +113,7 @@ pub(crate) fn get_current_chapter(response: String) -> String {
         let end_bytes = response_2.find("</").unwrap_or(response.len());
         let response_3 = &response_2[0..end_bytes];
     
-        return response_3.trim().to_owned();natomanga
+        return response_3.trim().to_owned();
     }else if response.contains("btn-navigation-chap") { // for natomanga
         let start_pos = response.find("selected>").unwrap_or(0) + 10;
         let response_2 = &response[start_pos..response.len()];
