@@ -28,7 +28,7 @@
 
   $: {
     mangaFiltered = list.filter((x) => {
-      if (!toggled) {
+      if (!toggled && !x["error"]) {
         return x["remaining_chapters"] > 0;
       } else {
         return true;
