@@ -100,7 +100,7 @@ async fn get_manga(app_handle: AppHandle) {
                             remaining_chapters: 0.to_string(),
                             url: i.url.clone(),
                         };
-                        if response.contains("navi-change-chapter-btn-next") {
+                        if response.contains("navi-change-chapter-btn-next") || response.contains("class=\"back\"") {
                             payload.remaining_chapters = get_remaining_chapters(response.clone());
                         }
                         app_handle_2.emit("scan_data", payload).unwrap();

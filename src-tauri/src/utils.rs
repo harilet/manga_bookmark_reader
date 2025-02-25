@@ -32,12 +32,8 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
             let mut index = 0;
 
             for j in all_anime.iter() {
-                if j.get("url")
-                    .unwrap()
-                    .as_str()
-                    .unwrap()
-                    .contains("chapmanganato")
-                {
+                let url = j.get("url").unwrap().as_str().unwrap();
+                if url.contains("chapmanganato") || url.contains("natomanga") {
                     index += 1;
                     result_data.push(BookmarkData {
                         name: j.get("name").unwrap().as_str().unwrap().to_string(),
@@ -93,12 +89,14 @@ fn get_all_chapters(response: String) -> Vec<String> {
         .enumerate()
         .filter(|&(i, _)| i % 2 != 0);
 
+        
+
     let mut response_4: Vec<String> = vec![];
 
     response_3.clone().for_each(|(_i, chapter_name)| {
         let str_end_index = chapter_name.find("<");
         match str_end_index {
-            Some(index) => response_4.push(chapter_name[0..index].to_owned()),
+            Some(index) => response_4.push(chapter_name[0..index].trim().to_owned()),
             None => response_4.push(chapter_name.to_owned()),
         }
     });
@@ -109,11 +107,21 @@ fn get_all_chapters(response: String) -> Vec<String> {
 }
 
 pub(crate) fn get_current_chapter(response: String) -> String {
-    let start_pos = response.find("selected >").unwrap_or(0) + 10;
-
-    let response_2 = &response[start_pos..response.len()];
-    let end_bytes = response_2.find("</").unwrap_or(response.len());
-    let response_3 = &response_2[0..end_bytes];
-
-    return response_3.to_owned();
+    if response.contains("navi-change-chapter-btn") { // for chapmanganato
+        let start_pos = response.find("selected >").unwrap_or(0) + 10;
+        let response_2 = &response[start_pos..response.len()];
+        let end_bytes = response_2.find("</").unwrap_or(response.len());
+        let response_3 = &response_2[0..end_bytes];
+    
+        return response_3.trim().to_owned();natomanga
+    }else if response.contains("btn-navigation-chap") { // for natomanga
+        let start_pos = response.find("selected>").unwrap_or(0) + 10;
+        let response_2 = &response[start_pos..response.len()];
+        let end_bytes = response_2.find("</").unwrap_or(response.len());
+        let response_3 = &response_2[0..end_bytes];
+    
+        return response_3.trim().to_owned();
+    }else{
+        return "".to_owned();
+    }
 }
