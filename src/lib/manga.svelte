@@ -1,6 +1,7 @@
 <script lang="ts">
   import { open } from "@tauri-apps/plugin-shell";
   import dataStore from "./data_store";
+  import ContextMenu from "./contextMenu.svelte";
 
   export let propValue: any;
 
@@ -24,6 +25,14 @@
     open(propValue["url"]);
   }
 
+  function searchForManga() {
+    let name: string = propValue["name"];
+    let updatedName = name
+      .slice(0, name.indexOf(" Chapter"))
+      .replaceAll(" ", "_");
+    open("https://www.natomanga.com/search/story/" + updatedName);
+  }
+
   async function setChapterWarning(event: any) {
     event.stopPropagation();
 
@@ -40,33 +49,51 @@
   function getUrlWithoutChapter() {
     return propValue["url"].split("/").slice(0, -1).join("/");
   }
+
+  function ContextMenuHandler(event: any, sId: string) {
+    switch (sId) {
+      case "mark_issue":
+        setChapterWarning(event);
+        break;
+      case "s-Natomanga":
+        searchForManga();
+        break;
+      default:
+        break;
+    }
+  }
 </script>
 
 <button on:click={openUrl} class="button-wrappper">
-  <div
-    data-augmented-ui="
-      tr-2-clip-x tl-2-clip-x
-    "
-    class="main-manga-area {borderClass} font-style"
+  <ContextMenu
+    items={[
+      { id: "mark_issue", name: "Mark issue" },
+      { Group: [{ Search: [{ id: "s-Natomanga", name: "Natomanga" }] }] },
+    ]}
+    onClick={ContextMenuHandler}
   >
-    <div class="index-date">
-      <div class="name">
-        {propValue["name"]}
+    <div
+      data-augmented-ui="
+        tr-2-clip-x tl-2-clip-x br-2-clip-x
+      "
+      class="main-manga-area {borderClass} font-style"
+    >
+      <div class="index-date">
+        <div class="name">
+          {propValue["name"]}
+        </div>
+        <div class="date-time">
+          {propValue["date_time"]}
+        </div>
       </div>
-      <div class="date-time">
-        {propValue["date_time"]}
-      </div>
-    </div>
 
-    <div class="remaining-chapter">
-      <div class="remaining-chapter-text">
-        {propValue["remaining_chapters"]}
+      <div class="remaining-chapter">
+        <div class="remaining-chapter-text">
+          {propValue["remaining_chapters"]}
+        </div>
       </div>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div on:click={setChapterWarning} class="warning-button">&nbsp;</div>
     </div>
-  </div>
+  </ContextMenu>
 </button>
 
 <style>
@@ -134,12 +161,14 @@
   .date-time {
     margin-top: 5px;
     color: gray;
+    white-space: nowrap;
   }
 
   .name {
     margin-bottom: 10px;
     font-weight: 600;
     font-size: 105%;
+    width: -webkit-fill-available;
   }
 
   .remaining-chapter {
