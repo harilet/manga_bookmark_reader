@@ -183,20 +183,4 @@
     margin-bottom: 10px;
     color: gray;
   }
-
-  .normal-class .warning-button {
-    width: 40px;
-    background: repeating-linear-gradient(
-      90deg,
-      var(--primary-color),
-      var(--primary-color) 1px,
-      var(--background-color) 1px,
-      var(--background-color) 3px
-    );
-  }
-
-  .warning-class .warning-button {
-    width: 40px;
-    background: var(--background-color);
-  }
 </style>
