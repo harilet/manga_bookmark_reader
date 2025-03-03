@@ -33,13 +33,27 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
 
             for j in all_anime.iter() {
                 let url = j.get("url").unwrap().as_str().unwrap();
-                if url.contains("chapmanganato") || url.contains("natomanga") {
+                if url.contains("chapmanganato") {
+                    let name = j.get("name").unwrap().as_str().unwrap();
+                    let new_url = name_to_url(name);
+
+                    index += 1;
+                    result_data.push(BookmarkData {
+                        name: j.get("name").unwrap().as_str().unwrap().to_string(),
+                        url: new_url,
+                        date_added: j.get("date_added").unwrap().as_str().unwrap().to_string(),
+                        index,
+                    });
+                } else if url.contains("chapmanganato")
+                    || url.contains("natomanga")
+                    || url.contains("manganato")
+                {
                     index += 1;
                     result_data.push(BookmarkData {
                         name: j.get("name").unwrap().as_str().unwrap().to_string(),
                         url: j.get("url").unwrap().as_str().unwrap().to_string(),
                         date_added: j.get("date_added").unwrap().as_str().unwrap().to_string(),
-                        index: index,
+                        index,
                     });
                 }
             }
@@ -47,6 +61,27 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
         }
     }
     return result_data.clone();
+}
+
+fn name_to_url(name: &str) -> String {
+    let end_pos = name.find(" Chapter").unwrap();
+    let res_name1: &String = &name[..end_pos]
+        .replace(" ", "-")
+        .to_ascii_lowercase()
+        .chars()
+        .filter(|c| c.is_alphanumeric() || c == &'-')
+        .collect();
+
+    let name12 = &name[name.find("Chapter").unwrap()..];
+    let temp: Vec<_> = name12.match_indices(" ").collect();
+    let res_name2 = &name12[8..temp.get(1).unwrap().0]
+        .replace(" ", "-")
+        .replace(".", "-");
+
+    return format!(
+        "https://www.manganato.gg/manga/{}/chapter-{}",
+        res_name1, res_name2
+    );
 }
 
 pub(crate) fn convert_date(j: String) -> DelayedFormat<StrftimeItems<'static>> {
@@ -89,8 +124,6 @@ fn get_all_chapters(response: String) -> Vec<String> {
         .enumerate()
         .filter(|&(i, _)| i % 2 != 0);
 
-        
-
     let mut response_4: Vec<String> = vec![];
 
     response_3.clone().for_each(|(_i, chapter_name)| {
@@ -107,21 +140,23 @@ fn get_all_chapters(response: String) -> Vec<String> {
 }
 
 pub(crate) fn get_current_chapter(response: String) -> String {
-    if response.contains("navi-change-chapter-btn") { // for chapmanganato
+    if response.contains("navi-change-chapter-btn") {
+        // for chapmanganato
         let start_pos = response.find("selected >").unwrap_or(0) + 10;
         let response_2 = &response[start_pos..response.len()];
         let end_bytes = response_2.find("</").unwrap_or(response.len());
         let response_3 = &response_2[0..end_bytes];
-    
+
         return response_3.trim().to_owned();
-    }else if response.contains("btn-navigation-chap") { // for natomanga
+    } else if response.contains("btn-navigation-chap") {
+        // for natomanga
         let start_pos = response.find("selected>").unwrap_or(0) + 10;
         let response_2 = &response[start_pos..response.len()];
         let end_bytes = response_2.find("</").unwrap_or(response.len());
         let response_3 = &response_2[0..end_bytes];
-    
+
         return response_3.trim().to_owned();
-    }else{
+    } else {
         return "".to_owned();
     }
 }

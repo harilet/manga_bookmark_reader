@@ -108,7 +108,7 @@ async fn get_manga(app_handle: AppHandle) {
                                 payload.remaining_chapters =
                                     get_remaining_chapters(response.clone());
                             }
-                        } else if response.contains("class=\"next\"") {
+                        } else if response.contains("PREV CHAPTER") {
                             if response.contains("class=\"back\"") {
                                 payload.remaining_chapters =
                                     get_remaining_chapters(response.clone());
@@ -122,6 +122,7 @@ async fn get_manga(app_handle: AppHandle) {
                 })
                 .unwrap();
         }
+
         if index == task_count && complete_queue.len() == 0 {
             app_handle
                 .emit("threads", format!("{}/{}", 0, WORKER_COUNT))
