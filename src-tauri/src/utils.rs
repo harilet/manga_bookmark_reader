@@ -65,18 +65,18 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
 
 fn name_to_url(name: &str) -> String {
     let end_pos = name.find(" Chapter").unwrap();
-    let res_name1: &String = &name[..end_pos]
-        .replace(" ", "-")
-        .to_ascii_lowercase()
+    let res_name1_temp: &String = &name[..end_pos]
         .chars()
-        .filter(|c| c.is_alphanumeric() || c == &'-')
+        .filter(|c| c.is_alphanumeric() || c == &'-' || c == &' ')
         .collect();
+    let res_name1 = res_name1_temp.replace(" ", "-").to_ascii_lowercase();
 
     let name12 = &name[name.find("Chapter").unwrap()..];
     let temp: Vec<_> = name12.match_indices(" ").collect();
     let res_name2 = &name12[8..temp.get(1).unwrap().0]
         .replace(" ", "-")
-        .replace(".", "-");
+        .replace(".", "-")
+        .replace(":", "");
 
     return format!(
         "https://www.manganato.gg/manga/{}/chapter-{}",
