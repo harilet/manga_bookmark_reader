@@ -92,7 +92,21 @@ pub(crate) fn convert_date(j: String) -> DelayedFormat<StrftimeItems<'static>> {
 }
 
 pub(crate) async fn get_html(url: &str) -> String {
-    return reqwest::get(url).await.unwrap().text().await.unwrap();
+    match reqwest::get(url).await {
+        Ok(response) => match response.text().await {
+            Ok(html_text) => {
+                return html_text;
+            }
+            Err(e) => {
+                println!("{:#?}",e);
+                return "".to_owned();
+            }
+        },
+        Err(e) => {
+            println!("{:#?}",e);
+            return "".to_owned();
+        }
+    }
 }
 
 pub(crate) fn get_remaining_chapters(response: String) -> String {
