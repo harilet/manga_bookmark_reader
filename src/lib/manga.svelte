@@ -1,6 +1,7 @@
 <script lang="ts">
   import { open } from "@tauri-apps/plugin-shell";
   import dataStore from "./data_store";
+  import ContextMenu from "./contextMenu.svelte";
 
   export let propValue: any;
 
@@ -27,6 +28,14 @@
     open("https://www.natomanga.com/search/story/"+updatedName);
   }
 
+  function searchForManga() {
+    let name: string = propValue["name"];
+    let updatedName = name
+      .slice(0, name.indexOf(" Chapter"))
+      .replaceAll(" ", "_");
+    open("https://www.natomanga.com/search/story/" + updatedName);
+  }
+
   async function setChapterWarning(event: any) {
     event.stopPropagation();
 
@@ -43,33 +52,99 @@
   function getUrlWithoutChapter() {
     return propValue["url"].split("/").slice(0, -1).join("/");
   }
+
+  function ContextMenuHandler(event: any, sId: string) {
+    switch (sId) {
+      case "mark_issue":
+        setChapterWarning(event);
+        break;
+      case "s-Natomanga":
+        searchForManga();
+        break;
+      case "t-Manganato.gg":
+      trySite("t-Manganato.gg");
+      break;
+      default:
+        break;
+    }
+  }
+
+  function trySite(site:string){
+    if(site=="t-Manganato.gg"){
+      nameToManganatoUrl()
+    }
+  }
+
+  function nameToManganatoUrl()  {
+    let name:string=propValue["name"];
+    let end_pos = name.indexOf(" Chapter")
+
+    let res_name1_temp: string = name.slice(0,end_pos);
+
+    let res_name1="";
+    res_name1_temp.split('').forEach(function(char){
+      console.log(char);
+      // if(char=='-' || char==' '){
+        res_name1+=char;
+      // }
+    });
+    
+    // res_name1_temp=res_name1_temp.replaceAll("-","");
+    // res_name1_temp=res_name1_temp.replaceAll(" ","");
+    // res_name1_temp=res_name1_temp.replaceAll("/[0-9]/g","");
+    console.log(res_name1)
+    
+    // .chars()
+    //     .filter(|c| c.is_alphanumeric() || c == &'-' || c == &' ')
+    //     .collect();
+    // let res_name1 = res_name1_temp.replace(" ", "-").to_ascii_lowercase();
+
+    // let name12 = &name[name.find("Chapter").unwrap()..];
+    // let temp: Vec<_> = name12.match_indices(" ").collect();
+    // let res_name2 = &name12[8..temp.get(1).unwrap().0]
+    //     .replace(" ", "-")
+    //     .replace(".", "-")
+    //     .replace(":", "");
+
+    // return format!(
+    //     "https://www.manganato.gg/manga/{}/chapter-{}",
+    //     res_name1, res_name2
+    // );
+}
 </script>
 
 <button on:click={openUrl} class="button-wrappper">
-  <div
-    data-augmented-ui="
-      tr-2-clip-x tl-2-clip-x
-    "
-    class="main-manga-area {borderClass} font-style"
+  <ContextMenu
+    items={[
+      { id: "mark_issue", name: "Mark issue" },
+      { Group: [{ Search: [{ id: "s-Natomanga", name: "Natomanga" }]} ,
+      {Try: [{ id: "t-Manganato.gg", name: "Manganato.gg" }]}
+    ] },
+    ]}
+    onClick={ContextMenuHandler}
   >
-    <div class="index-date">
-      <div class="name">
-        {propValue["name"]}
+    <div
+      data-augmented-ui="
+        tr-2-clip-x tl-2-clip-x br-2-clip-x
+      "
+      class="main-manga-area {borderClass} font-style"
+    >
+      <div class="index-date">
+        <div class="name">
+          {propValue["name"]}
+        </div>
+        <div class="date-time">
+          {propValue["date_time"]}
+        </div>
       </div>
-      <div class="date-time">
-        {propValue["date_time"]}
-      </div>
-    </div>
 
-    <div class="remaining-chapter">
-      <div class="remaining-chapter-text">
-        {propValue["remaining_chapters"]}
+      <div class="remaining-chapter">
+        <div class="remaining-chapter-text">
+          {propValue["remaining_chapters"]}
+        </div>
       </div>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div on:click={setChapterWarning} class="warning-button">&nbsp;</div>
     </div>
-  </div>
+  </ContextMenu>
 </button>
 
 <style>
@@ -137,13 +212,15 @@
 
   .date-time {
     margin-top: 5px;
-    color: var(--secondary-text);
+    color: gray;
+    white-space: nowrap;
   }
 
   .name {
     margin-bottom: 10px;
     font-weight: 600;
     font-size: 105%;
+    width: -webkit-fill-available;
   }
 
   .remaining-chapter {
@@ -157,21 +234,5 @@
   .remaining-chapter-text {
     margin-bottom: 10px;
     color: var(--secondary-text);
-  }
-
-  .normal-class .warning-button {
-    width: 40px;
-    background: repeating-linear-gradient(
-      90deg,
-      var(--primary-color),
-      var(--primary-color) 1px,
-      var(--background-color) 1px,
-      var(--background-color) 3px
-    );
-  }
-
-  .warning-class .warning-button {
-    width: 40px;
-    background: var(--background-color);
   }
 </style>

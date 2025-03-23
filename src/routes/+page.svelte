@@ -21,14 +21,16 @@
 
   let mangaSortedAndFiltered: any[];
 
-  $: threadCount=0;
-  $: activeThread=0;
+  $: threadCount = 0;
+  $: activeThread = 0;
 
   $: listLength = list.length;
 
+  $: filtredListLength = mangaFiltered.length;
+
   $: {
     mangaFiltered = list.filter((x) => {
-      if (!toggled) {
+      if (!toggled && !x["error"]) {
         return x["remaining_chapters"] > 0;
       } else {
         return true;
@@ -63,9 +65,9 @@
     });
     emit("get_threads");
     await listen("threads", (event) => {
-      let data:string[]=String(event.payload).split('/');
-      activeThread=parseInt(data[0]);
-      threadCount=parseInt(data[1]);
+      let data: string[] = String(event.payload).split("/");
+      activeThread = parseInt(data[0]);
+      threadCount = parseInt(data[1]);
     });
   });
 
@@ -84,7 +86,13 @@
 
 <div class="app">
   <div class="top-progress-bar-area">
-    <ProgressBar value={listLength} max={totalSize} threadValue={activeThread} maxThread={threadCount}/>
+    <ProgressBar
+      value={listLength}
+      max={totalSize}
+      threadValue={activeThread}
+      maxThread={threadCount}
+      listCount={filtredListLength}
+    />
   </div>
 
   <div class="main-area">

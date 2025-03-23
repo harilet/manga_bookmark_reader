@@ -3,6 +3,7 @@
   export let max = 0;
   export let threadValue = 0;
   export let maxThread = 0;
+  export let listCount = 0;
 
   let progress_bar_class = "";
 
@@ -43,7 +44,7 @@
   </div>
 
   <div>
-    {value} of {max}
+    {listCount} : {value} of {max}
   </div>
 </div>
 

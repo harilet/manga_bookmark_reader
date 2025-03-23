@@ -16,6 +16,7 @@ struct Payload {
     date_time: String,
     remaining_chapters: String,
     url: String,
+    error: bool,
 }
 
 #[derive(Clone, serde::Serialize)]
@@ -35,7 +36,8 @@ pub fn run() {
         .setup(|app| {
             let app_handle = app.handle().to_owned();
             app.listen("get_threads", move |_event| {
-                app_handle.emit("threads", format!("{}/{}", 0, WORKER_COUNT))
+                app_handle
+                    .emit("threads", format!("{}/{}", 0, WORKER_COUNT))
                     .unwrap();
             });
 
@@ -91,7 +93,7 @@ async fn get_manga(app_handle: AppHandle) {
                 .stack_size(0)
                 .spawn(move || {
                     block_on(async {
-                        // let response = get_html(&i.url).await;
+                        let response = get_html(&i.url).await;
                         let dt = convert_date(i.date_added.clone());
                         let mut payload = Payload {
                             index: i.index,
@@ -99,16 +101,28 @@ async fn get_manga(app_handle: AppHandle) {
                             date_time: dt.to_string(),
                             remaining_chapters: 0.to_string(),
                             url: i.url.clone(),
+                            error: false,
                         };
-                        // if response.contains("navi-change-chapter-btn-next") {
-                        //     payload.remaining_chapters = get_remaining_chapters(response.clone());
-                        // }
+                        if response.contains("navi-change-chapter-btn-prev") {
+                            if response.contains("navi-change-chapter-btn-next") {
+                                payload.remaining_chapters =
+                                    get_remaining_chapters(response.clone());
+                            }
+                        } else if response.contains("PREV CHAPTER") {
+                            if response.contains("class=\"back\"") {
+                                payload.remaining_chapters =
+                                    get_remaining_chapters(response.clone());
+                            }
+                        } else {
+                            payload.error = true;
+                        }
                         app_handle_2.emit("scan_data", payload).unwrap();
                         _complete_queue.pop().await;
                     })
                 })
                 .unwrap();
         }
+
         if index == task_count && complete_queue.len() == 0 {
             app_handle
                 .emit("threads", format!("{}/{}", 0, WORKER_COUNT))
