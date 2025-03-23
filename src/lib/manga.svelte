@@ -58,17 +58,65 @@
       case "s-Natomanga":
         searchForManga();
         break;
+      case "t-Manganato.gg":
+      trySite("t-Manganato.gg");
+      break;
       default:
         break;
     }
   }
+
+  function trySite(site:string){
+    if(site=="t-Manganato.gg"){
+      nameToManganatoUrl()
+    }
+  }
+
+  function nameToManganatoUrl()  {
+    let name:string=propValue["name"];
+    let end_pos = name.indexOf(" Chapter")
+
+    let res_name1_temp: string = name.slice(0,end_pos);
+
+    let res_name1="";
+    res_name1_temp.split('').forEach(function(char){
+      console.log(char);
+      // if(char=='-' || char==' '){
+        res_name1+=char;
+      // }
+    });
+    
+    // res_name1_temp=res_name1_temp.replaceAll("-","");
+    // res_name1_temp=res_name1_temp.replaceAll(" ","");
+    // res_name1_temp=res_name1_temp.replaceAll("/[0-9]/g","");
+    console.log(res_name1)
+    
+    // .chars()
+    //     .filter(|c| c.is_alphanumeric() || c == &'-' || c == &' ')
+    //     .collect();
+    // let res_name1 = res_name1_temp.replace(" ", "-").to_ascii_lowercase();
+
+    // let name12 = &name[name.find("Chapter").unwrap()..];
+    // let temp: Vec<_> = name12.match_indices(" ").collect();
+    // let res_name2 = &name12[8..temp.get(1).unwrap().0]
+    //     .replace(" ", "-")
+    //     .replace(".", "-")
+    //     .replace(":", "");
+
+    // return format!(
+    //     "https://www.manganato.gg/manga/{}/chapter-{}",
+    //     res_name1, res_name2
+    // );
+}
 </script>
 
 <button on:click={openUrl} class="button-wrappper">
   <ContextMenu
     items={[
       { id: "mark_issue", name: "Mark issue" },
-      { Group: [{ Search: [{ id: "s-Natomanga", name: "Natomanga" }] }] },
+      { Group: [{ Search: [{ id: "s-Natomanga", name: "Natomanga" }]} ,
+      {Try: [{ id: "t-Manganato.gg", name: "Manganato.gg" }]}
+    ] },
     ]}
     onClick={ContextMenuHandler}
   >
