@@ -1,6 +1,8 @@
 <script>
   import { getCurrentWindow } from "@tauri-apps/api/window";
 
+  export let selectedTab = "manga";
+
   const appWindow = getCurrentWindow();
 
   function onClickReduce() {
@@ -14,10 +16,47 @@
   function onClickClose() {
     appWindow.close();
   }
+
+  function tabSelect(item) {
+    selectedTab = item;
+  }
 </script>
 
-  <div data-tauri-drag-region class="title-bar">
-    <button class="hvrBgDark" on:click="{onClickReduce}">
+<div data-tauri-drag-region class="title-bar">
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div class="tabs">
+    <div
+      on:click={(_) => tabSelect("manga")}
+      class="tab-wrapper"
+      style={selectedTab == "manga" ? "" : "background: black;"}
+    >
+      <div
+        class="tab"
+        data-augmented-ui="
+        bl-clip-x br-clip-x
+     "
+      >
+        manga
+      </div>
+    </div>
+    <div
+      on:click={(_) => tabSelect("anime")}
+      class="tab-wrapper"
+      style={selectedTab == "anime" ? "" : "background: black;"}
+    >
+      <div
+        class="tab"
+        data-augmented-ui="
+        bl-clip-x br-clip-x
+     "
+      >
+        anime
+      </div>
+    </div>
+  </div>
+  <div class="window-controls">
+    <button class="hvrBgDark" on:click={onClickReduce}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 16.933333 16.933334"
@@ -33,7 +72,7 @@
       </svg>
     </button>
 
-    <button class="hvrBgDark" on:click="{onClickMaximize}">
+    <button class="hvrBgDark" on:click={onClickMaximize}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 16.933333 16.933334"
@@ -51,8 +90,8 @@
 
     <button
       class="btn-close"
-      on:click="{onClickClose}"
-      on:keypress="{onClickClose}"
+      on:click={onClickClose}
+      on:keypress={onClickClose}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -69,11 +108,40 @@
       </svg>
     </button>
   </div>
+</div>
 
 <style>
+  .tab-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    background: var(--primary-color);
+  }
+
+  .tab {
+    background: var(--background-color);
+    color: var(--primary-color);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--border);
+  }
+
+  .window-controls {
+    display: flex;
+  }
+
+  .tabs {
+    display: flex;
+    color: var(--primary-color);
+  }
+
   .title-bar {
     display: flex;
-    justify-content: end;
+    justify-content: space-between;
     height: 100%;
   }
 

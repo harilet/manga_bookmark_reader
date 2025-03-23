@@ -6,6 +6,7 @@
   import ProgressBar from "../lib/progress-bar.svelte";
   import Dropdown from "../lib/dropdown.svelte";
   import Manga from "../lib/manga.svelte";
+  import Anime from "./anime.svelte";
 
   let toggled = false;
 
@@ -27,6 +28,7 @@
   $: listLength = list.length;
 
   $: filtredListLength = mangaFiltered.length;
+  $: modeSelected = "manga";
 
   $: {
     mangaFiltered = list.filter((x) => {
@@ -81,52 +83,56 @@
 </script>
 
 <div data-tauri-drag-region class="app-bar">
-  <Titlebar />
+  <Titlebar bind:selectedTab={modeSelected} />
 </div>
 
-<div class="app">
-  <div class="top-progress-bar-area">
-    <ProgressBar
-      value={listLength}
-      max={totalSize}
-      threadValue={activeThread}
-      maxThread={threadCount}
-      listCount={filtredListLength}
-    />
-  </div>
+{#if modeSelected == "manga"}
+  <div class="app">
+    <div class="top-progress-bar-area">
+      <ProgressBar
+        value={listLength}
+        max={totalSize}
+        threadValue={activeThread}
+        maxThread={threadCount}
+        listCount={filtredListLength}
+      />
+    </div>
 
-  <div class="main-area">
-    <div class="side-bar">
-      <div style="width: 150px;">
-        <Dropdown bind:sort />
-      </div>
-      <div style="width: 150px;margin-left: 20px;">
-        <Toggle bind:toggled />
-      </div>
+    <div class="main-area">
+      <div class="side-bar">
+        <div style="width: 150px;">
+          <Dropdown bind:sort />
+        </div>
+        <div style="width: 150px;margin-left: 20px;">
+          <Toggle bind:toggled />
+        </div>
 
-      <button
-        data-augmented-ui="
+        <button
+          data-augmented-ui="
           bl-2-clip-x tl-clip
         "
-        class="fetch-button font-style {disabled
-          ? 'fetch-button-disabled'
-          : 'fetch-button-enabled'}"
-        on:click={eventEmit}
-      >
-        Fetch
-      </button>
-    </div>
-    <div class="main-scrollbar manga-list">
-      {#key toggled}
-        {#key sort}
-          {#each mangaSortedAndFiltered as manga}
-            <Manga propValue={manga}></Manga>
-          {/each}
+          class="fetch-button font-style {disabled
+            ? 'fetch-button-disabled'
+            : 'fetch-button-enabled'}"
+          on:click={eventEmit}
+        >
+          Fetch
+        </button>
+      </div>
+      <div class="main-scrollbar manga-list">
+        {#key toggled}
+          {#key sort}
+            {#each mangaSortedAndFiltered as manga}
+              <Manga propValue={manga}></Manga>
+            {/each}
+          {/key}
         {/key}
-      {/key}
+      </div>
     </div>
   </div>
-</div>
+{:else if modeSelected == "anime"}
+  <Anime />
+{/if}
 
 <style>
   .app-bar {
