@@ -22,10 +22,7 @@
   }
 
   function openUrl() {
-    let name: string=propValue["name"];
-    let updatedName=(name.slice(0,name.indexOf(" Chapter"))).replaceAll(' ','_');
-    console.log(updatedName)
-    open("https://www.natomanga.com/search/story/"+updatedName);
+    open(propValue["url"]);
   }
 
   function searchForManga() {
