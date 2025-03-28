@@ -23,3 +23,4 @@ chrono = "0.4.37"
 reqwest = { version = "0.12.3", features = ["blocking"] }
 tauri-plugin-store = "2.0.0-rc.1"
 deadqueue = "0.2.4"
+html_parser = "0.7.0"

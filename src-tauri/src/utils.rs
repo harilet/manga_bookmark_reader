@@ -44,7 +44,7 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
                         date_added: j.get("date_added").unwrap().as_str().unwrap().to_string(),
                         index,
                     });
-                } else if url.contains("chapmanganato")
+                } else if url.contains("asuracomic")
                     || url.contains("natomanga")
                     || url.contains("manganato")
                 {
