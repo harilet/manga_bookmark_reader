@@ -36,7 +36,7 @@
     {#each [...Array(maxThread).keys()] as i (i)}
       <div
         class="thread-box"
-        style="--fill: {threadValue <= i ? 'transparent' : 'white'};"
+        style="--fill: {threadValue <= i ? 'transparent' : 'var(--primary-color)'};"
       >
         <span></span>
       </div>
@@ -60,7 +60,7 @@
   }
 
   .progress-area-wrapper {
-    padding: 1px;
+    padding: 0px;
   }
 
   .progress-area {

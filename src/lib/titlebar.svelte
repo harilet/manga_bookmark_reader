@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { getCurrentWindow } from "@tauri-apps/api/window";
 
   export let selectedTab = "manga";
@@ -17,7 +17,7 @@
     appWindow.close();
   }
 
-  function tabSelect(item) {
+  function tabSelect(item: string) {
     selectedTab = item;
   }
 </script>
@@ -28,13 +28,12 @@
   <div class="tabs">
     <div
       on:click={(_) => tabSelect("manga")}
-      class="tab-wrapper"
-      style={selectedTab == "manga" ? "" : "background: black;"}
+      class="tab-wrapper {selectedTab == "manga" ? "selected-tab" :""}"
     >
       <div
         class="tab"
         data-augmented-ui="
-        bl-clip-x br-clip-x
+        bl-clip-x br-clip-x tl-clip-x tr-clip-x border
      "
       >
         manga
@@ -42,13 +41,12 @@
     </div>
     <div
       on:click={(_) => tabSelect("anime")}
-      class="tab-wrapper"
-      style={selectedTab == "anime" ? "" : "background: black;"}
+      class="tab-wrapper {selectedTab == "anime" ? "selected-tab" :""}"
     >
       <div
         class="tab"
         data-augmented-ui="
-        bl-clip-x br-clip-x
+        bl-clip-x br-clip-x tl-clip-x tr-clip-x border
      "
       >
         anime
@@ -116,7 +114,7 @@
     align-items: center;
     justify-content: center;
     width: 150px;
-    background: var(--primary-color);
+    background: transparent;
   }
 
   .tab {
@@ -128,6 +126,12 @@
     align-items: center;
     justify-content: center;
     border: var(--border);
+    --aug-border-all: 0px;
+    --aug-border-bg: var(--primary-color);
+  }
+
+  .selected-tab{
+    background: var(--primary-color);
   }
 
   .window-controls {
@@ -137,6 +141,7 @@
   .tabs {
     display: flex;
     color: var(--primary-color);
+    background: rgb(8 51 68 / 0.2);
   }
 
   .title-bar {

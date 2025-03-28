@@ -135,9 +135,13 @@
 {/if}
 
 <style>
+
+  .top-progress-bar-area{
+    background: rgb(8 51 68 / 0.2);
+  }
   .app-bar {
     width: 100%;
-    height: 30px;
+    height: 35px;
   }
   .app {
     width: 100%;
@@ -148,7 +152,7 @@
   .main-area {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 88px);
+    height: calc(100vh - 90px);
   }
 
   .side-bar {
@@ -159,6 +163,7 @@
     flex-direction: row;
     position: relative;
     border-top: var(--border);
+    background: rgb(8 51 68 / 0.2);
   }
 
   .manga-list {
