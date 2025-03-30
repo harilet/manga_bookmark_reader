@@ -32,29 +32,44 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
             let mut index = 0;
 
             for j in all_anime.iter() {
-                let url = j.get("url").unwrap().as_str().unwrap();
-                if url.contains("chapmanganato") {
-                    let name = j.get("name").unwrap().as_str().unwrap();
-                    let new_url = name_to_url(name);
+                match j.get("url") {
+                    Some(url_value) => {
+                        let url = url_value.as_str().unwrap();
+                        if url.contains("chapmanganato") {
+                            let name = j.get("name").unwrap().as_str().unwrap();
+                            let new_url = name_to_url(name);
 
-                    index += 1;
-                    result_data.push(BookmarkData {
-                        name: j.get("name").unwrap().as_str().unwrap().to_string(),
-                        url: new_url,
-                        date_added: j.get("date_added").unwrap().as_str().unwrap().to_string(),
-                        index,
-                    });
-                } else if url.contains("asuracomic")
-                    || url.contains("natomanga")
-                    || url.contains("manganato")
-                {
-                    index += 1;
-                    result_data.push(BookmarkData {
-                        name: j.get("name").unwrap().as_str().unwrap().to_string(),
-                        url: j.get("url").unwrap().as_str().unwrap().to_string(),
-                        date_added: j.get("date_added").unwrap().as_str().unwrap().to_string(),
-                        index,
-                    });
+                            index += 1;
+                            result_data.push(BookmarkData {
+                                name: j.get("name").unwrap().as_str().unwrap().to_string(),
+                                url: new_url,
+                                date_added: j
+                                    .get("date_added")
+                                    .unwrap()
+                                    .as_str()
+                                    .unwrap()
+                                    .to_string(),
+                                index,
+                            });
+                        } else if url.contains("asuracomic")
+                            || url.contains("natomanga")
+                            || url.contains("manganato")
+                        {
+                            index += 1;
+                            result_data.push(BookmarkData {
+                                name: j.get("name").unwrap().as_str().unwrap().to_string(),
+                                url: j.get("url").unwrap().as_str().unwrap().to_string(),
+                                date_added: j
+                                    .get("date_added")
+                                    .unwrap()
+                                    .as_str()
+                                    .unwrap()
+                                    .to_string(),
+                                index,
+                            });
+                        }
+                    }
+                    None => {}
                 }
             }
             break;
@@ -98,12 +113,12 @@ pub(crate) async fn get_html(url: &str) -> String {
                 return html_text;
             }
             Err(e) => {
-                println!("{:#?}",e);
+                println!("{:#?}", e);
                 return "".to_owned();
             }
         },
         Err(e) => {
-            println!("{:#?}",e);
+            println!("{:#?}", e);
             return "".to_owned();
         }
     }
