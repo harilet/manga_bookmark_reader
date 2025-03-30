@@ -115,6 +115,7 @@
     justify-content: center;
     width: 150px;
     background: transparent;
+    cursor: pointer;
   }
 
   .tab {

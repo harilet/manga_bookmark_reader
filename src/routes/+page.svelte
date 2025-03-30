@@ -7,6 +7,7 @@
   import Dropdown from "../lib/dropdown.svelte";
   import Manga from "../lib/manga.svelte";
   import Anime from "./anime.svelte";
+  import Search from "$lib/search.svelte";
 
   let toggled = false;
 
@@ -21,6 +22,7 @@
   let mangaFiltered: any[];
 
   let mangaSortedAndFiltered: any[];
+  let mangaSortedFilteredAndSearched: any[];
 
   $: threadCount = 0;
   $: activeThread = 0;
@@ -29,6 +31,7 @@
 
   $: filtredListLength = mangaFiltered.length;
   $: modeSelected = "manga";
+  $: searchText = "";
 
   $: {
     mangaFiltered = list.filter((x) => {
@@ -46,6 +49,17 @@
         return a["remaining_chapters"] - b["remaining_chapters"];
       }
       return 0;
+    });
+
+    mangaSortedFilteredAndSearched = mangaSortedAndFiltered.filter((x) => {
+      let url: string = x["url"];
+      let name: string = x["name"];
+      if (url.search(searchText) != -1) {
+        return true;
+      } else if (name.search(searchText) != -1) {
+        return true;
+      }
+      return false;
     });
   }
 
@@ -107,6 +121,10 @@
           <Toggle bind:toggled />
         </div>
 
+        <div>
+          <Search bind:searchText />
+        </div>
+
         <button
           data-augmented-ui="
           bl-2-clip-x tl-clip
@@ -122,7 +140,7 @@
       <div class="main-scrollbar manga-list">
         {#key toggled}
           {#key sort}
-            {#each mangaSortedAndFiltered as manga}
+            {#each mangaSortedFilteredAndSearched as manga}
               <Manga propValue={manga}></Manga>
             {/each}
           {/key}
@@ -135,8 +153,7 @@
 {/if}
 
 <style>
-
-  .top-progress-bar-area{
+  .top-progress-bar-area {
     background: rgb(8 51 68 / 0.2);
   }
   .app-bar {
