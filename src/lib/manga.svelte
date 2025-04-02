@@ -156,14 +156,14 @@
     color: var(--primary-color);
     border: var(--border);
     text-shadow:
-      2px 2px 0 #000000,
-      2px -2px 0 #000000,
-      -2px 2px 0 #000000,
-      -2px -2px 0 #000000,
-      2px 0px 0 #000000,
-      0px 2px 0 #000000,
-      -2px 0px 0 #000000,
-      0px -2px 0 #000000;
+      2px 2px 0 var(--background-color),
+      2px -2px 0 var(--background-color),
+      -2px 2px 0 var(--background-color),
+      -2px -2px 0 var(--background-color),
+      2px 0px 0 var(--background-color),
+      0px 2px 0 var(--background-color),
+      -2px 0px 0 var(--background-color),
+      0px -2px 0 var(--background-color);
     background: repeating-linear-gradient(
       90deg,
       var(--primary-color),

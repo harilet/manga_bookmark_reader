@@ -142,7 +142,7 @@
   .tabs {
     display: flex;
     color: var(--primary-color);
-    background: rgb(8 51 68 / 0.2);
+    background: var(--accent);
   }
 
   .title-bar {

@@ -154,7 +154,7 @@
 
 <style>
   .top-progress-bar-area {
-    background: rgb(8 51 68 / 0.2);
+    background: var(--accent);
   }
   .app-bar {
     width: 100%;
@@ -180,7 +180,7 @@
     flex-direction: row;
     position: relative;
     border-top: var(--border);
-    background: rgb(8 51 68 / 0.2);
+    background: var(--accent);
   }
 
   .manga-list {
