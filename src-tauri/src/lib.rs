@@ -104,15 +104,19 @@ async fn get_manga(app_handle: AppHandle) {
                             url: i.url.clone(),
                             error: false,
                         };
-                        if response.contains("navi-change-chapter-btn-prev") {
-                            if response.contains("navi-change-chapter-btn-next") {
-                                payload.remaining_chapters =
-                                    get_remaining_chapters(response.clone());
+                        if i.url.contains("natomanga") || i.url.contains("manganato"){
+                            if response.contains("PREV CHAPTER") {
+                                if response.contains("class=\"back\"") {
+                                    payload.remaining_chapters =
+                                        get_remaining_chapters(response.clone(),"natomanga/manganato".to_owned());
+                                }
                             }
-                        } else if response.contains("PREV CHAPTER") {
-                            if response.contains("class=\"back\"") {
-                                payload.remaining_chapters =
-                                    get_remaining_chapters(response.clone());
+                        }else if i.url.contains("manhwaclan"){
+                            if response.contains("class=\"btn prev_page\"") {
+                                if response.contains("class=\"btn next_page\"") {
+                                    payload.remaining_chapters =
+                                        get_remaining_chapters(response.clone(),"manhwaclan".to_owned());
+                                }
                             }
                         } else if i.url.contains("asuracomic") {
                             let new_asuracomic = have_new_asuracomic(response);

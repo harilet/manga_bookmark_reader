@@ -1,69 +1,70 @@
 <script lang="ts">
-    import CloseIcon from "./icon/closeIcon.svelte";
-    import SearchIcon from "./icon/searchIcon.svelte";
+  import CloseIcon from "./icon/closeIcon.svelte";
+  import SearchIcon from "./icon/searchIcon.svelte";
+  import Input from "./input.svelte";
 
-    export let searchText = "";
+  export let searchText = "";
 
-    $: showSearchBox = false;
+  $: showSearchBox = false;
 
-    function handleClick() {
-        showSearchBox = !showSearchBox;
-        searchText="";
+  function handleClick() {
+    showSearchBox = !showSearchBox;
+    searchText = "";
+  }
+
+  function inputOnKeydown(data: any) {
+    if (data.key == "Escape") {
+      handleClick();
     }
+  }
 </script>
 
 <div class="search-box">
-    <button
-        class="search-btn {showSearchBox ? 'hide' : 'show'}"
-        on:click={handleClick}
-    >
-        <SearchIcon />
+  <button
+    class="search-btn {showSearchBox ? 'hide' : 'show'}"
+    on:click={handleClick}
+  >
+    <SearchIcon />
+  </button>
+  <div class="search-main {showSearchBox ? 'show' : 'hide'}">
+    <Input
+      bind:value={searchText}
+      placeholder="Search..."
+      keydown={inputOnKeydown}
+    />
+    <button class="search-btn" on:click={handleClick}>
+      <CloseIcon />
     </button>
-    <div class="search-main {showSearchBox ? 'show' : 'hide'}">
-        <input type="text" bind:value={searchText} placeholder="Search..." />
-        <button class="search-btn" on:click={handleClick}>
-            <CloseIcon />
-        </button>
-    </div>
+  </div>
 </div>
 
 <style>
-    .search-box {
-        background: transparent;
-        border: solid 1px var(--primary-color);
-        height: 30px;
-        margin: 0px;
-        padding: 0px;
-        margin-left: 20px;
-    }
+  .search-box {
+    background: transparent;
+    border: solid 1px var(--primary-color);
+    height: 30px;
+    margin: 0px;
+    padding: 0px;
+    margin-left: 20px;
+  }
 
-    .search-main {
-        display: flex;
-        align-items: center;
-        justify-items: center;
-    }
+  .search-main {
+    display: flex;
+    align-items: center;
+    justify-items: center;
+  }
 
-    .search-btn {
-        background: transparent;
-        border: none;
-        cursor: pointer;
-    }
+  .search-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
 
-    .show {
-        display: flex !important;
-    }
+  .show {
+    display: flex !important;
+  }
 
-    .hide {
-        display: none !important;
-    }
-    input[type="text"] {
-        height: 20px;
-        background: transparent;
-        color: var(--primary-color);
-        border: none;
-    }
-
-    input[type="text"]:focus-visible {
-        outline: none !important;
-    }
+  .hide {
+    display: none !important;
+  }
 </style>
