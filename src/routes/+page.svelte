@@ -9,7 +9,7 @@
   import Anime from "./anime.svelte";
   import Search from "$lib/search.svelte";
 
-  let toggled = false;
+  let showAllMangas = false;
 
   let totalSize = 0;
 
@@ -35,11 +35,13 @@
 
   $: {
     mangaFiltered = list.filter((x) => {
-      if (!toggled && !x["error"]) {
-        return x["remaining_chapters"] > 0;
-      } else {
+      if (x["error"]) {
         return true;
       }
+      if (showAllMangas) {
+        return true;
+      }
+      return x["remaining_chapters"] > 0;
     });
 
     mangaSortedAndFiltered = mangaFiltered.toSorted((a, b) => {
@@ -118,7 +120,7 @@
           <Dropdown bind:sort />
         </div>
         <div style="width: 150px;margin-left: 20px;">
-          <Toggle bind:toggled />
+          <Toggle bind:toggled={showAllMangas} />
         </div>
 
         <div>
@@ -138,7 +140,7 @@
         </button>
       </div>
       <div class="main-scrollbar manga-list">
-        {#key toggled}
+        {#key showAllMangas}
           {#key sort}
             {#each mangaSortedFilteredAndSearched as manga}
               <Manga propValue={manga}></Manga>
