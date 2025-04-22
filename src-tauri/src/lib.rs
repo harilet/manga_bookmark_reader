@@ -110,6 +110,8 @@ async fn get_manga(app_handle: AppHandle) {
                                     payload.remaining_chapters =
                                         get_remaining_chapters(response.clone(),"natomanga/manganato".to_owned());
                                 }
+                            }else{
+                                payload.error = true;
                             }
                         }else if i.url.contains("manhwaclan"){
                             if response.contains("class=\"btn prev_page\"") {
@@ -117,6 +119,8 @@ async fn get_manga(app_handle: AppHandle) {
                                     payload.remaining_chapters =
                                         get_remaining_chapters(response.clone(),"manhwaclan".to_owned());
                                 }
+                            }else{
+                                payload.error = true;
                             }
                         } else if i.url.contains("asuracomic") {
                             let new_asuracomic = have_new_asuracomic(response);
