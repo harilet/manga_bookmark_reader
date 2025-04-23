@@ -80,9 +80,12 @@ async fn get_manga(app_handle: AppHandle) {
                 .unwrap();
         }
         while complete_queue.len() < WORKER_COUNT && index < task_count {
-            let i = data[index].clone();
+            let manga_data = data[index].clone();
 
-            complete_queue.try_push(i.index).unwrap();
+            complete_queue.try_push(manga_data.index).unwrap();
+            app_handle
+                .emit("thread_update", format!("+{}", manga_data.url.clone()))
+                .unwrap();
             index += 1;
             app_handle
                 .emit("threads", format!("{}/{}", prev_thread_count, WORKER_COUNT))
@@ -94,35 +97,41 @@ async fn get_manga(app_handle: AppHandle) {
                 .stack_size(0)
                 .spawn(move || {
                     block_on(async {
-                        let response = get_html(&i.url).await;
-                        let dt = convert_date(i.date_added.clone());
+                        let response = get_html(&manga_data.url).await;
+                        let dt = convert_date(manga_data.date_added.clone());
                         let mut payload = Payload {
-                            index: i.index,
-                            name: i.name.clone(),
+                            index: manga_data.index,
+                            name: manga_data.name.clone(),
                             date_time: dt.to_string(),
                             remaining_chapters: 0.to_string(),
-                            url: i.url.clone(),
+                            url: manga_data.url.clone(),
                             error: false,
                         };
-                        if i.url.contains("natomanga") || i.url.contains("manganato"){
+                        if manga_data.url.contains("natomanga")
+                            || manga_data.url.contains("manganato")
+                        {
                             if response.contains("PREV CHAPTER") {
                                 if response.contains("class=\"back\"") {
-                                    payload.remaining_chapters =
-                                        get_remaining_chapters(response.clone(),"natomanga/manganato".to_owned());
+                                    payload.remaining_chapters = get_remaining_chapters(
+                                        response.clone(),
+                                        "natomanga/manganato".to_owned(),
+                                    );
                                 }
-                            }else{
+                            } else {
                                 payload.error = true;
                             }
-                        }else if i.url.contains("manhwaclan"){
+                        } else if manga_data.url.contains("manhwaclan") {
                             if response.contains("class=\"btn prev_page\"") {
                                 if response.contains("class=\"btn next_page\"") {
-                                    payload.remaining_chapters =
-                                        get_remaining_chapters(response.clone(),"manhwaclan".to_owned());
+                                    payload.remaining_chapters = get_remaining_chapters(
+                                        response.clone(),
+                                        "manhwaclan".to_owned(),
+                                    );
                                 }
-                            }else{
+                            } else {
                                 payload.error = true;
                             }
-                        } else if i.url.contains("asuracomic") {
+                        } else if manga_data.url.contains("asuracomic") {
                             let new_asuracomic = have_new_asuracomic(response);
                             if new_asuracomic == 1 {
                                 payload.remaining_chapters = "1".to_string();
@@ -136,6 +145,9 @@ async fn get_manga(app_handle: AppHandle) {
                         }
                         app_handle_2.emit("scan_data", payload).unwrap();
                         _complete_queue.pop().await;
+                        app_handle_2
+                            .emit("thread_update", format!("-{}", manga_data.url.clone()))
+                            .unwrap();
                     })
                 })
                 .unwrap();

@@ -8,6 +8,7 @@
   import Manga from "../lib/manga.svelte";
   import Anime from "./anime.svelte";
   import Search from "$lib/search.svelte";
+  import List from "$lib/icon/list.svelte";
 
   let showAllMangas = false;
 
@@ -32,6 +33,8 @@
   $: filtredListLength = mangaFiltered.length;
   $: modeSelected = "manga";
   $: searchText = "";
+  $: mangaInThread = [""];
+  let mangaInThreadDialog: HTMLDialogElement;
 
   $: {
     mangaFiltered = list.filter((x) => {
@@ -66,6 +69,8 @@
   }
 
   onMount(async () => {
+    mangaInThread = mangaInThread.filter((x) => x !== "");
+
     await listen("scan_data", (event) => {
       if (event.payload == "done") {
         disabled = false;
@@ -87,6 +92,33 @@
       activeThread = parseInt(data[0]);
       threadCount = parseInt(data[1]);
     });
+
+    await listen("thread_update", (event) => {
+      let data = String(event.payload);
+      console.log(data[0] == "+");
+      if (data[0] == "+") {
+        mangaInThread = [...mangaInThread, data.substring(1)];
+      } else {
+        let temp = mangaInThread.filter(function (x) {
+          return x != data.substring(1);
+        });
+        mangaInThread = [];
+        mangaInThread = [...temp];
+      }
+      console.log(mangaInThread);
+    });
+
+    mangaInThreadDialog.addEventListener("click", function (event) {
+      var rect = mangaInThreadDialog.getBoundingClientRect();
+      var isInDialog =
+        rect.top <= event.clientY &&
+        event.clientY <= rect.top + rect.height &&
+        rect.left <= event.clientX &&
+        event.clientX <= rect.left + rect.width;
+      if (!isInDialog) {
+        mangaInThreadDialog.close();
+      }
+    });
   });
 
   function eventEmit() {
@@ -96,11 +128,38 @@
       });
     }
   }
+
+  function toggleDialog() {
+    if (mangaInThreadDialog.open) {
+      mangaInThreadDialog.close();
+    } else {
+      mangaInThreadDialog.showModal();
+    }
+  }
 </script>
 
 <div data-tauri-drag-region class="app-bar">
   <Titlebar bind:selectedTab={modeSelected} />
 </div>
+
+<dialog bind:this={mangaInThreadDialog} on:close>
+  {#key mangaInThread}
+    {#each mangaInThread as manga_item}
+      <div class="manga-in-thread-wrapper">
+        <div
+          data-augmented-ui="
+        r-rect l-rect
+      "
+          class="manga-in-thread"
+        >
+          {#if manga_item !== ""}
+            {manga_item}
+          {/if}
+        </div>
+      </div>
+    {/each}
+  {/key}
+</dialog>
 
 {#if modeSelected == "manga"}
   <div class="app">
@@ -116,7 +175,12 @@
 
     <div class="main-area">
       <div class="side-bar">
-        <div style="width: 150px;">
+        <div>
+          <button class="thread-manga-btn" on:click={toggleDialog}>
+            <List />
+          </button>
+        </div>
+        <div style="width: 150px; margin-left: 20px;">
           <Dropdown bind:sort />
         </div>
         <div style="width: 150px;margin-left: 20px;">
@@ -209,5 +273,38 @@
   .fetch-button-disabled {
     background: var(--primary-disabled-color);
     cursor: wait;
+  }
+
+  dialog {
+    border-radius: 5px;
+    border-width: 1px;
+    transition: all 2s;
+    width: 90%;
+    z-index: 2;
+    height: 70%;
+    padding: 20px;
+    background: var(--background-color);
+    border: var(--border);
+  }
+
+  dialog::backdrop {
+    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
+    animation: fade-in 1s;
+  }
+
+  .manga-in-thread-wrapper {
+    background: var(--primary-color);
+    border: var(--border);
+  }
+
+  .manga-in-thread {
+    background: var(--background-color);
+    padding: 20px;
+    color: var(--primary-color);
+  }
+
+  .thread-manga-btn {
+    background: transparent;
+    border: var(--border);
   }
 </style>
