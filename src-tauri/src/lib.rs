@@ -132,13 +132,10 @@ async fn get_manga(app_handle: AppHandle) {
                                 payload.error = true;
                             }
                         } else if manga_data.url.contains("asuracomic") {
-                            let new_asuracomic = have_new_asuracomic(response);
-                            if new_asuracomic == 1 {
-                                payload.remaining_chapters = "1".to_string();
-                            } else if new_asuracomic == 2 {
+                            if response.contains("rounded-full cursor-not-allowed") {
                                 payload.remaining_chapters = "0".to_string();
                             } else {
-                                payload.error = true;
+                                payload.remaining_chapters = "1".to_string();
                             }
                         } else {
                             payload.error = true;
@@ -162,40 +159,4 @@ async fn get_manga(app_handle: AppHandle) {
     }
 
     app_handle.emit("scan_data", "done").unwrap();
-}
-
-fn have_new_asuracomic(response: String) -> i8 {
-    let dom = Dom::parse(response.as_str()).unwrap();
-    let nav_sess = dom.children[0].element().unwrap().children[1]
-        .element()
-        .unwrap()
-        .children[5]
-        .element()
-        .unwrap()
-        .children[0]
-        .element()
-        .unwrap()
-        .children[0]
-        .element()
-        .unwrap()
-        .children[0]
-        .element()
-        .unwrap()
-        .children[5]
-        .clone();
-
-    let next = nav_sess.element().unwrap().children[1]
-        .element()
-        .unwrap()
-        .children
-        .clone();
-    if next[0].element().unwrap().name == "a" {
-        if next[1].element().unwrap().name == "a" {
-            return 1;
-        } else {
-            return 2;
-        }
-    }
-
-    return 0;
 }
