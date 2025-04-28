@@ -23,14 +23,14 @@
   let mangaFiltered: any[];
 
   let mangaSortedAndFiltered: any[];
-  let mangaSortedFilteredAndSearched: any[];
+  let mangaFinal: any[];
 
   $: threadCount = 0;
   $: activeThread = 0;
 
   $: listLength = list.length;
 
-  $: filtredListLength = mangaFiltered.length;
+  $: finalLength = mangaFinal.length;
   $: modeSelected = "manga";
   $: searchText = "";
   $: mangaInThread = [""];
@@ -56,7 +56,7 @@
       return 0;
     });
 
-    mangaSortedFilteredAndSearched = mangaSortedAndFiltered.filter((x) => {
+    mangaFinal = mangaSortedAndFiltered.filter((x) => {
       let url: string = x["url"];
       let name: string = x["name"];
       if (url.search(searchText) != -1) {
@@ -169,7 +169,7 @@
         max={totalSize}
         threadValue={activeThread}
         maxThread={threadCount}
-        listCount={filtredListLength}
+        listCount={finalLength}
       />
     </div>
 
@@ -206,7 +206,7 @@
       <div class="main-scrollbar manga-list">
         {#key showAllMangas}
           {#key sort}
-            {#each mangaSortedFilteredAndSearched as manga}
+            {#each mangaFinal as manga}
               <Manga propValue={manga}></Manga>
             {/each}
           {/key}

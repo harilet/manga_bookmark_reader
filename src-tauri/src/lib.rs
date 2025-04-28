@@ -1,6 +1,5 @@
 mod utils;
 
-use html_parser::Dom;
 use serde_json::Value;
 use std::sync::Arc;
 use std::thread;
