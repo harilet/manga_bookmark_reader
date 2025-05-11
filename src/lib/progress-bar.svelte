@@ -33,14 +33,18 @@
 
 <div class="progress-test">
   <div style="display: flex;">
-    {#each [...Array(maxThread).keys()] as i (i)}
-      <div
-        class="thread-box"
-        style="--fill: {threadValue <= i ? 'transparent' : 'var(--primary-color)'};"
-      >
-        <span></span>
-      </div>
-    {/each}
+    {#if !Number.isNaN(maxThread)}
+      {#each [...Array(maxThread).keys()] as i (i)}
+        <div
+          class="thread-box"
+          style="--fill: {threadValue <= i
+            ? 'transparent'
+            : 'var(--primary-color)'};"
+        >
+          <span></span>
+        </div>
+      {/each}
+    {/if}
   </div>
 
   <div>

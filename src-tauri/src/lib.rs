@@ -24,8 +24,6 @@ struct PayloadMangaSize {
     size: usize,
 }
 
-const WORKER_COUNT: usize = 8;
-
 type CompleteQueue = deadqueue::limited::Queue<usize>;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -35,22 +33,18 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let app_handle = app.handle().to_owned();
-            app.listen("get_threads", move |_event| {
-                app_handle
-                    .emit("threads", format!("{}/{}", 0, WORKER_COUNT))
-                    .unwrap();
-            });
 
             let main_window = app.get_webview_window("main").unwrap();
             main_window
                 .set_effects(EffectsBuilder::new().effect(Effect::Acrylic).build())
                 .unwrap();
-            let app_handle2 = app.handle().to_owned();
             app.listen("start_scan", move |event| {
                 let payload: Value = serde_json::from_str(event.payload()).unwrap();
-                if payload.get("the_message").unwrap() == "read_manga" {
-                    spawn(get_manga(app_handle2.to_owned()));
-                }
+                let worker_count = payload.get("worker_count").unwrap();
+                spawn(get_manga(
+                    app_handle.to_owned(),
+                    worker_count.as_i64().unwrap().try_into().unwrap(),
+                ));
             });
             Ok(())
         })
@@ -58,7 +52,7 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-async fn get_manga(app_handle: AppHandle) {
+async fn get_manga(app_handle: AppHandle, worker_count: usize) {
     let data = read_bookmark();
     let mut index = 0;
 
@@ -75,10 +69,10 @@ async fn get_manga(app_handle: AppHandle) {
         if prev_thread_count != complete_queue.len() {
             prev_thread_count = complete_queue.len();
             app_handle
-                .emit("threads", format!("{}/{}", prev_thread_count, WORKER_COUNT))
+                .emit("threads", format!("{}", prev_thread_count))
                 .unwrap();
         }
-        while complete_queue.len() < WORKER_COUNT && index < task_count {
+        while complete_queue.len() < worker_count && index < task_count {
             let manga_data = data[index].clone();
 
             complete_queue.try_push(manga_data.index).unwrap();
@@ -87,7 +81,7 @@ async fn get_manga(app_handle: AppHandle) {
                 .unwrap();
             index += 1;
             app_handle
-                .emit("threads", format!("{}/{}", prev_thread_count, WORKER_COUNT))
+                .emit("threads", format!("{}", prev_thread_count))
                 .unwrap();
 
             let _complete_queue = complete_queue.clone();
@@ -150,9 +144,7 @@ async fn get_manga(app_handle: AppHandle) {
         }
 
         if index == task_count && complete_queue.len() == 0 {
-            app_handle
-                .emit("threads", format!("{}/{}", 0, WORKER_COUNT))
-                .unwrap();
+            app_handle.emit("threads", format!("{}", 0)).unwrap();
             break;
         }
     }

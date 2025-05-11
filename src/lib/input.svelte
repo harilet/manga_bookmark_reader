@@ -1,14 +1,18 @@
 <script lang="ts">
   export let value = "";
   export let placeholder = "";
-  export let keydown;
+  export let keydown = (data: any) => {};
+  export let disabled = false;
+  export let onChange = (data: any) => {};
 </script>
 
 <input
   type="text"
   bind:value
   {placeholder}
+  {disabled}
   on:keydown={keydown}
+  on:change={onChange}
 />
 
 <style>

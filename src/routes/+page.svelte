@@ -9,6 +9,8 @@
   import Anime from "./anime.svelte";
   import Search from "$lib/search.svelte";
   import List from "$lib/icon/list.svelte";
+  import Input from "$lib/input.svelte";
+  import dataStore from "$lib/data_store";
 
   let showAllMangas = false;
 
@@ -25,7 +27,7 @@
   let mangaSortedAndFiltered: any[];
   let mangaFinal: any[];
 
-  $: threadCount = 0;
+  $: threadCount = "0";
   $: activeThread = 0;
 
   $: listLength = list.length;
@@ -70,6 +72,10 @@
 
   onMount(async () => {
     mangaInThread = mangaInThread.filter((x) => x !== "");
+    let tempThreadCount = await dataStore.get("thread_count");
+    if (typeof tempThreadCount === "string") {
+      threadCount = tempThreadCount;
+    }
 
     await listen("scan_data", (event) => {
       if (event.payload == "done") {
@@ -86,16 +92,13 @@
         }
       }
     });
-    emit("get_threads");
     await listen("threads", (event) => {
       let data: string[] = String(event.payload).split("/");
       activeThread = parseInt(data[0]);
-      threadCount = parseInt(data[1]);
     });
 
     await listen("thread_update", (event) => {
       let data = String(event.payload);
-      console.log(data[0] == "+");
       if (data[0] == "+") {
         mangaInThread = [...mangaInThread, data.substring(1)];
       } else {
@@ -105,7 +108,6 @@
         mangaInThread = [];
         mangaInThread = [...temp];
       }
-      console.log(mangaInThread);
     });
 
     mangaInThreadDialog.addEventListener("click", function (event) {
@@ -124,7 +126,7 @@
   function eventEmit() {
     if (!disabled) {
       emit("start_scan", {
-        the_message: "read_manga",
+        worker_count: parseInt(threadCount),
       });
     }
   }
@@ -136,6 +138,10 @@
       mangaInThreadDialog.showModal();
     }
   }
+
+  async function onThreadCountChange(data: any) {
+    await dataStore.set("thread_count", threadCount);
+  }
 </script>
 
 <div data-tauri-drag-region class="app-bar">
@@ -143,34 +149,44 @@
 </div>
 
 <dialog bind:this={mangaInThreadDialog} on:close>
-  {#key mangaInThread}
-    {#each mangaInThread as manga_item}
-      <div class="manga-in-thread-wrapper">
-        <div
-          data-augmented-ui="
+  <div style="border: solid 1px var(--primary-color);width: 99%;">
+    <Input
+      bind:value={threadCount}
+      placeholder="Number of threads"
+      {disabled}
+      onChange={onThreadCountChange}
+    />
+    {#key mangaInThread}
+      {#each mangaInThread as manga_item}
+        <div class="manga-in-thread-wrapper">
+          <div
+            data-augmented-ui="
         r-rect l-rect
       "
-          class="manga-in-thread"
-        >
-          {#if manga_item !== ""}
-            {manga_item}
-          {/if}
+            class="manga-in-thread"
+          >
+            {#if manga_item !== ""}
+              {manga_item}
+            {/if}
+          </div>
         </div>
-      </div>
-    {/each}
-  {/key}
+      {/each}
+    {/key}
+  </div>
 </dialog>
 
 {#if modeSelected == "manga"}
   <div class="app">
     <div class="top-progress-bar-area">
-      <ProgressBar
-        value={listLength}
-        max={totalSize}
-        threadValue={activeThread}
-        maxThread={threadCount}
-        listCount={finalLength}
-      />
+      {#key threadCount != ""}
+        <ProgressBar
+          value={listLength}
+          max={totalSize}
+          threadValue={activeThread}
+          maxThread={parseInt(threadCount)}
+          listCount={finalLength}
+        />
+      {/key}
     </div>
 
     <div class="main-area">
