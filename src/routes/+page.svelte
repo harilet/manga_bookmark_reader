@@ -140,7 +140,7 @@
   }
 
   async function onThreadCountChange(data: any) {
-    await dataStore.set("thread_count", threadCount);
+    await dataStore.set("thread_count", data.target.value);
   }
 </script>
 
@@ -150,12 +150,6 @@
 
 <dialog bind:this={mangaInThreadDialog} on:close>
   <div style="border: solid 1px var(--primary-color);width: 99%;">
-    <Input
-      bind:value={threadCount}
-      placeholder="Number of threads"
-      {disabled}
-      onChange={onThreadCountChange}
-    />
     {#key mangaInThread}
       {#each mangaInThread as manga_item}
         <div class="manga-in-thread-wrapper">
@@ -184,7 +178,9 @@
           max={totalSize}
           threadValue={activeThread}
           maxThread={parseInt(threadCount)}
+          {threadCount}
           listCount={finalLength}
+          {onThreadCountChange}
         />
       {/key}
     </div>
