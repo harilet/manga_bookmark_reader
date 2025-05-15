@@ -141,6 +141,7 @@
 
   async function onThreadCountChange(data: any) {
     await dataStore.set("thread_count", data.target.value);
+    threadCount=data.target.value;
   }
 </script>
 
