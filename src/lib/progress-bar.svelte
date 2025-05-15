@@ -44,17 +44,28 @@
   }
 
   function onThreadCountChange2(data: any) {
-    mangaInThreadDialog.close();
-    onThreadCountChange(data);
+    let dataValue = data.target.value;
+    if (dataValue !== "" && dataValue != "0") {
+      mangaInThreadDialog.close();
+      onThreadCountChange(data);
+    }
   }
 </script>
 
-<dialog bind:this={mangaInThreadDialog} on:close>
-  <Input
-    bind:value={threadCount}
-    placeholder="Number of threads"
-    onChange={onThreadCountChange2}
-  />
+<dialog
+  bind:this={mangaInThreadDialog}
+  on:close
+  data-augmented-ui="tl-2-clip-x tr-2-clip-x br-2-clip-x bl-2-clip-x"
+>
+  <div style="background-color: var(--background-color);">
+    <input
+      type="text"
+      placeholder="Number of threads"
+      bind:value={threadCount}
+      on:change={onThreadCountChange2}
+      style="text-align: center;"
+    />
+  </div>
 </dialog>
 
 <div class="progress-area-wrapper">
@@ -180,5 +191,16 @@
   dialog::backdrop {
     background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
     animation: fade-in 1s;
+  }
+
+  input[type="text"] {
+    height: 20px;
+    background: transparent;
+    color: var(--primary-color);
+    border: none;
+  }
+
+  input[type="text"]:focus-visible {
+    outline: none !important;
   }
 </style>

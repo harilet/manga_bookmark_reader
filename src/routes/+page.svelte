@@ -141,7 +141,7 @@
 
   async function onThreadCountChange(data: any) {
     await dataStore.set("thread_count", data.target.value);
-    threadCount=data.target.value;
+    threadCount = data.target.value;
   }
 </script>
 
@@ -150,14 +150,12 @@
 </div>
 
 <dialog bind:this={mangaInThreadDialog} on:close>
-  <div style="border: solid 1px var(--primary-color);width: 99%;">
-    {#key mangaInThread}
-      {#each mangaInThread as manga_item}
+  {#key mangaInThread}
+    {#each mangaInThread as manga_item}
+      <div style="border: solid 1px var(--primary-color);width: 99%;">
         <div class="manga-in-thread-wrapper">
           <div
-            data-augmented-ui="
-        r-rect l-rect
-      "
+            data-augmented-ui="r-rect l-rect"
             class="manga-in-thread"
           >
             {#if manga_item !== ""}
@@ -165,9 +163,9 @@
             {/if}
           </div>
         </div>
-      {/each}
-    {/key}
-  </div>
+      </div>
+    {/each}
+  {/key}
 </dialog>
 
 {#if modeSelected == "manga"}
