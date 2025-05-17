@@ -1,17 +1,18 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import Input from "./input.svelte";
+  import { invoke } from "@tauri-apps/api/core";
+  import { listen } from "@tauri-apps/api/event";
+  import dataStore from "./data_store";
 
   export let value = 0;
   export let max = 0;
-  export let threadValue = 0;
-  export let maxThread = 0;
   export let listCount = 0;
-  export let threadCount = "";
-  export let onThreadCountChange = (data: any) => {};
 
+  $: threadCount = 0;
+  $: currentThreadCount = 0;
   let progress_bar_class = "";
   let mangaInThreadDialog: HTMLDialogElement;
+  $: mangaInThread = [""];
 
   $: {
     if (value >= max) {
@@ -21,7 +22,14 @@
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
+    mangaInThread = mangaInThread.filter((x) => x !== "");
+    let tempThreadCount = await dataStore.get("thread_count");
+    if (typeof tempThreadCount === "string") {
+      threadCount = Number.parseInt(tempThreadCount);
+      changeThreadCount();
+    }
+
     mangaInThreadDialog.addEventListener("click", function (event) {
       var rect = mangaInThreadDialog.getBoundingClientRect();
       var isInDialog =
@@ -33,6 +41,24 @@
         mangaInThreadDialog.close();
       }
     });
+
+    await listen("thread_update", (event: { payload: any }) => {
+      let data = String(event.payload);
+      if (data[0] == "+") {
+        mangaInThread = [...mangaInThread, data.substring(1)];
+      } else {
+        let temp = mangaInThread.filter(function (x) {
+          return x != data.substring(1);
+        });
+        mangaInThread = [];
+        mangaInThread = [...temp];
+      }
+    });
+
+    await listen("threads", (event) => {
+      let data: string[] = String(event.payload).split("/");
+      currentThreadCount = parseInt(data[0]);
+    });
   });
 
   function showThreadCountInput() {
@@ -43,29 +69,45 @@
     }
   }
 
-  function onThreadCountChange2(data: any) {
+  function changeThreadCount() {
+    invoke("update_thread_count", {
+      newThreadCount: parseInt(threadCount + ""),
+    });
+  }
+
+  async function onThreadCountChange(data: any) {
     let dataValue = data.target.value;
     if (dataValue !== "" && dataValue != "0") {
+      dataValue = parseInt(dataValue);
+      await dataStore.set("thread_count", dataValue + "");
+      threadCount = dataValue;
+      changeThreadCount();
       mangaInThreadDialog.close();
-      onThreadCountChange(data);
     }
   }
 </script>
 
-<dialog
-  bind:this={mangaInThreadDialog}
-  on:close
-  data-augmented-ui="tl-2-clip-x tr-2-clip-x br-2-clip-x bl-2-clip-x"
->
-  <div style="background-color: var(--background-color);">
-    <input
-      type="text"
-      placeholder="Number of threads"
-      bind:value={threadCount}
-      on:change={onThreadCountChange2}
-      style="text-align: center;"
-    />
-  </div>
+<dialog bind:this={mangaInThreadDialog} on:close>
+  <input
+    type="text"
+    placeholder="Number of threads"
+    value={threadCount}
+    on:change={onThreadCountChange}
+    style="text-align: center;"
+  />
+  {#key mangaInThread}
+    {#each mangaInThread as manga_item}
+      <div style="border: solid 1px var(--primary-color);width: 99%;">
+        <div class="manga-in-thread-wrapper">
+          <div data-augmented-ui="r-rect l-rect" class="manga-in-thread">
+            {#if manga_item !== ""}
+              {manga_item}
+            {/if}
+          </div>
+        </div>
+      </div>
+    {/each}
+  {/key}
 </dialog>
 
 <div class="progress-area-wrapper">
@@ -87,18 +129,18 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div style="display: flex;cursor: pointer;" on:click={showThreadCountInput}>
-    {#if !Number.isNaN(maxThread)}
-      {#each [...Array(maxThread).keys()] as i (i)}
+    {#key threadCount}
+      {#each [...Array(threadCount).keys()] as i (i)}
         <div
           class="thread-box"
-          style="--fill: {threadValue <= i
+          style="--fill: {currentThreadCount <= i
             ? 'transparent'
             : 'var(--primary-color)'};"
         >
           <span></span>
         </div>
       {/each}
-    {/if}
+    {/key}
   </div>
 
   <div>
@@ -182,7 +224,9 @@
     border-radius: 5px;
     border-width: 1px;
     transition: all 2s;
+    width: 90%;
     z-index: 2;
+    height: 70%;
     padding: 20px;
     background: var(--background-color);
     border: var(--border);
@@ -202,5 +246,16 @@
 
   input[type="text"]:focus-visible {
     outline: none !important;
+  }
+
+  .manga-in-thread-wrapper {
+    background: var(--primary-color);
+    border: var(--border);
+  }
+
+  .manga-in-thread {
+    background: var(--background-color);
+    padding: 20px;
+    color: var(--primary-color);
   }
 </style>

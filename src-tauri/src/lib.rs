@@ -1,12 +1,12 @@
 mod utils;
 
-use serde_json::Value;
 use std::sync::Arc;
+use std::sync::Mutex;
 use std::thread;
 use tauri::async_runtime::block_on;
 use tauri::window::{Effect, EffectsBuilder};
-use tauri::{async_runtime::spawn, AppHandle};
-use tauri::{Emitter, Listener, Manager};
+use tauri::AppHandle;
+use tauri::{Emitter, Manager};
 use utils::{convert_date, get_html, get_remaining_chapters, read_bookmark};
 
 #[derive(Clone, serde::Serialize)]
@@ -24,6 +24,11 @@ struct PayloadMangaSize {
     size: usize,
 }
 
+#[derive(Default)]
+struct AppData {
+    thread: usize,
+}
+
 type CompleteQueue = deadqueue::limited::Queue<usize>;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -32,27 +37,35 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
-            let app_handle = app.handle().to_owned();
+            app.manage(Mutex::new(AppData::default()));
 
             let main_window = app.get_webview_window("main").unwrap();
             main_window
                 .set_effects(EffectsBuilder::new().effect(Effect::Acrylic).build())
                 .unwrap();
-            app.listen("start_scan", move |event| {
-                let payload: Value = serde_json::from_str(event.payload()).unwrap();
-                let worker_count = payload.get("worker_count").unwrap();
-                spawn(get_manga(
-                    app_handle.to_owned(),
-                    worker_count.as_i64().unwrap().try_into().unwrap(),
-                ));
-            });
+
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![get_manga, update_thread_count,])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-async fn get_manga(app_handle: AppHandle, worker_count: usize) {
+#[tauri::command]
+fn update_thread_count(app_handle: AppHandle, new_thread_count: u64) {
+    let state = app_handle.state::<Mutex<AppData>>().to_owned();
+
+    // Lock the mutex to get mutable access:
+    let mut state = state.lock().unwrap();
+
+    // Modify the state:
+    state.thread = new_thread_count as usize;
+}
+
+#[tauri::command]
+async fn get_manga(app_handle: AppHandle) {
+    let state = app_handle.state::<Mutex<AppData>>().to_owned();
+    let worker_count = state.lock().unwrap().thread;
     let data = read_bookmark();
     let mut index = 0;
 
