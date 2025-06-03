@@ -143,6 +143,8 @@ async fn get_manga(app_handle: AppHandle) {
                             } else {
                                 payload.remaining_chapters = "1".to_string();
                             }
+                        } else if manga_data.url.contains("mangadex") {
+                            payload.remaining_chapters = "1".to_string();
                         } else {
                             payload.error = true;
                         }

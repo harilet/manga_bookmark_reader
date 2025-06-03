@@ -9,6 +9,7 @@
   import Anime from "./anime.svelte";
   import Search from "$lib/search.svelte";
   import { invoke } from "@tauri-apps/api/core";
+  import Random from "../lib/icon/random.svelte";
 
   let showAllMangas = false;
 
@@ -86,6 +87,12 @@
       invoke("get_manga");
     }
   }
+
+  function openRandom() {
+    const rand=Math.random();
+    const randomElement = list[Math.floor(rand * list.length)];
+    open(randomElement["url"]);
+  }
 </script>
 
 <div data-tauri-drag-region class="app-bar">
@@ -95,11 +102,7 @@
 {#if modeSelected == "manga"}
   <div class="app">
     <div class="top-progress-bar-area">
-      <ProgressBar
-        value={listLength}
-        max={totalSize}
-        listCount={finalLength}
-      />
+      <ProgressBar value={listLength} max={totalSize} listCount={finalLength} />
     </div>
 
     <div class="main-area">
@@ -114,6 +117,10 @@
         <div>
           <Search bind:searchText />
         </div>
+
+        <button class="search-btn" on:click={openRandom}>
+          <Random />
+        </button>
 
         <button
           data-augmented-ui="
@@ -197,5 +204,12 @@
   .fetch-button-disabled {
     background: var(--primary-disabled-color);
     cursor: wait;
+  }
+
+  .search-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    margin-left: 20px;
   }
 </style>
