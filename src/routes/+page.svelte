@@ -10,6 +10,7 @@
   import Search from "$lib/search.svelte";
   import { invoke } from "@tauri-apps/api/core";
   import Random from "../lib/icon/random.svelte";
+  import { open } from "@tauri-apps/plugin-shell";
 
   let showAllMangas = false;
 
