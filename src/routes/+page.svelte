@@ -11,6 +11,7 @@
   import { invoke } from "@tauri-apps/api/core";
   import Random from "../lib/icon/random.svelte";
   import { open } from "@tauri-apps/plugin-shell";
+  import dataStore from "$lib/data_store";
 
   let showAllMangas = false;
 
@@ -90,9 +91,35 @@
   }
 
   function openRandom() {
-    const rand=Math.random();
-    const randomElement = list[Math.floor(rand * list.length)];
-    open(randomElement["url"]);
+    dataSaving();
+  }
+
+  async function dataSaving() {
+    let data: any[] | null = await dataStore.get("savedUrlList");
+    if (data != null) {
+      let savedUrlList: any[] = data;
+      if (savedUrlList.length == list.length) {
+        savedUrlList = [];
+      }
+      let filitredList = [...list];
+      for (let i = 0; i < savedUrlList.length - 1; i++) {
+        filitredList.filter((item) => item != savedUrlList[i]);
+      }
+
+      let rand = getRandom(filitredList);
+      while (savedUrlList.indexOf(rand) != -1) {
+        rand = getRandom(filitredList);
+      }
+      savedUrlList.push(rand);
+      dataStore.set("savedUrlList", savedUrlList);
+      open(rand["url"]);
+    }else{
+      dataStore.set("savedUrlList", []);
+    }
+  }
+
+  function getRandom(array: any[]) {
+    return list[Math.floor(Math.random() * array.length)];
   }
 </script>
 
