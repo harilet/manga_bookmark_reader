@@ -33,6 +33,7 @@
   $: finalLength = mangaFinal.length;
   $: modeSelected = "manga";
   $: searchText = "";
+  $: savedUrlListLength = 0;
 
   $: {
     mangaFiltered = list.filter((x) => {
@@ -67,6 +68,12 @@
   }
 
   onMount(async () => {
+    dataStore.get("savedUrlList").then((data: any) => {
+      if (data != null) {
+        savedUrlListLength = data.length;
+      }
+    });
+
     await listen("scan_data", (event) => {
       if (event.payload == "done") {
         disabled = false;
@@ -113,7 +120,8 @@
       savedUrlList.push(rand);
       dataStore.set("savedUrlList", savedUrlList);
       open(rand["url"]);
-    }else{
+      savedUrlListLength = data.length;
+    } else {
       dataStore.set("savedUrlList", []);
     }
   }
@@ -149,6 +157,9 @@
         <button class="search-btn" on:click={openRandom}>
           <Random />
         </button>
+        <div class="label">
+          {savedUrlListLength}
+        </div>
 
         <button
           data-augmented-ui="
@@ -239,5 +250,9 @@
     border: none;
     cursor: pointer;
     margin-left: 20px;
+  }
+
+  .label {
+    color: var(--primary-color);
   }
 </style>
