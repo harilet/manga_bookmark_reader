@@ -3,6 +3,7 @@
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
   import dataStore from "./data_store";
+  import DeleteHistory from "./icon/delete_history.svelte";
 
   export let value = 0;
   export let max = 0;
@@ -85,16 +86,26 @@
       mangaInThreadDialog.close();
     }
   }
+
+  function clearRandomHistory() {
+    dataStore.delete("savedUrlList");
+  }
 </script>
 
 <dialog bind:this={mangaInThreadDialog} on:close>
-  <input
-    type="text"
-    placeholder="Number of threads"
-    value={threadCount}
-    on:change={onThreadCountChange}
-    style="text-align: center;"
-  />
+  <div class="settings-header">
+    <input
+      type="text"
+      placeholder="Number of threads"
+      value={threadCount}
+      on:change={onThreadCountChange}
+      style="text-align: center;"
+    />
+    <button class="btn" on:click={clearRandomHistory}>
+      <DeleteHistory />
+    </button>
+  </div>
+
   {#key mangaInThread}
     {#each mangaInThread as manga_item}
       <div style="border: solid 1px var(--primary-color);width: 99%;">
@@ -257,5 +268,17 @@
     background: var(--background-color);
     padding: 20px;
     color: var(--primary-color);
+  }
+
+  .settings-header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    margin-left: 20px;
   }
 </style>

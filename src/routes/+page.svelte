@@ -110,15 +110,15 @@
       }
       let filitredList = [...list];
       for (let i = 0; i < savedUrlList.length - 1; i++) {
-        filitredList.filter((item) => item != savedUrlList[i]);
+        filitredList = filitredList.filter((item) => {
+          return item["url"] != savedUrlList[i];
+        });
       }
+      console.log(list.length - filitredList.length);
 
       let rand = getRandom(filitredList);
-      while (savedUrlList.indexOf(rand) != -1) {
-        rand = getRandom(filitredList);
-      }
-      savedUrlList.push(rand);
-      dataStore.set("savedUrlList", savedUrlList);
+      savedUrlList.push(rand["url"]);
+      await dataStore.set("savedUrlList", savedUrlList);
       open(rand["url"]);
       savedUrlListLength = data.length;
     } else {
