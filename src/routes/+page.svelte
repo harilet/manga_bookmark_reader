@@ -108,13 +108,10 @@
       if (savedUrlList.length == list.length) {
         savedUrlList = [];
       }
-      let filitredList = [...list];
-      for (let i = 0; i < savedUrlList.length - 1; i++) {
-        filitredList = filitredList.filter((item) => {
-          return item["url"] != savedUrlList[i];
-        });
-      }
-      console.log(list.length - filitredList.length);
+
+      let filitredList = list.filter((item) => {
+        return !savedUrlList.includes(item["url"]);
+      });
 
       let rand = getRandom(filitredList);
       savedUrlList.push(rand["url"]);
