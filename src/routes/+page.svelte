@@ -103,28 +103,44 @@
 
   async function dataSaving() {
     let data: any[] | null = await dataStore.get("savedUrlList");
+
     if (data != null) {
-      let savedUrlList: any[] = data;
+      let savedUrlList: any[] = [...data];
+      let shuffledArray = shuffleArray(list);
+
       if (savedUrlList.length == list.length) {
+        await dataStore.set("savedUrlList", []);
         savedUrlList = [];
       }
 
-      let filitredList = list.filter((item) => {
-        return !savedUrlList.includes(item["url"]);
-      });
+      // Loop through each URL in the list
+      for (let urlIndex = 0; urlIndex < shuffledArray.length; urlIndex++) {
+        let url = shuffledArray[urlIndex]["url"];
 
-      let rand = getRandom(filitredList);
-      savedUrlList.push(rand["url"]);
-      await dataStore.set("savedUrlList", savedUrlList);
-      open(rand["url"]);
-      savedUrlListLength = data.length;
+        // Check if the URL is already in the saved list
+        if (!savedUrlList.includes(url)) {
+          await open(url); // Open the URL using a hypothetical open function
+          savedUrlList.push(url); // Add the URL to the saved list
+          await dataStore.set("savedUrlList", savedUrlList);
+          break;
+        }
+      }
     } else {
-      dataStore.set("savedUrlList", []);
+      await dataStore.set("savedUrlList", []);
     }
   }
 
   function getRandom(array: any[]) {
     return list[Math.floor(Math.random() * array.length)];
+  }
+
+  function shuffleArray(array: any[]) {
+    let returnArray = [...array];
+    for (let i = returnArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [returnArray[i], returnArray[j]] = [returnArray[j], returnArray[i]];
+    }
+    return returnArray;
   }
 </script>
 
