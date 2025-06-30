@@ -122,6 +122,7 @@
           await open(url); // Open the URL using a hypothetical open function
           savedUrlList.push(url); // Add the URL to the saved list
           await dataStore.set("savedUrlList", savedUrlList);
+          savedUrlListLength = savedUrlList.length;
           break;
         }
       }
