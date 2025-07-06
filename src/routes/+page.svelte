@@ -125,7 +125,10 @@
       let data: any[] | null = await dataStore.get("savedUrlList");
 
       if (data != null) {
-        let shuffledArray = [...list];
+        let shuffledArray = list.toSorted((a, b) => {
+          return a["index"] - b["index"];
+        });
+
         let savedUrlList: any[] = [...data];
         if (shuffleSample) {
           shuffledArray = shuffleArray(shuffledArray);
