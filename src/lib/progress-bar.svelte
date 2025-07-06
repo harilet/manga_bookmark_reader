@@ -86,39 +86,35 @@
       mangaInThreadDialog.close();
     }
   }
-
-  function clearRandomHistory() {
-    dataStore.delete("savedUrlList");
-  }
 </script>
 
 <dialog bind:this={mangaInThreadDialog} on:close>
-  <div class="settings-header">
-    <input
-      type="text"
-      placeholder="Number of threads"
-      value={threadCount}
-      on:change={onThreadCountChange}
-      style="text-align: center;"
-    />
-    <button class="btn" on:click={clearRandomHistory}>
-      <DeleteHistory />
-    </button>
-  </div>
-
-  {#key mangaInThread}
-    {#each mangaInThread as manga_item}
-      <div style="border: solid 1px var(--primary-color);width: 99%;">
-        <div class="manga-in-thread-wrapper">
-          <div data-augmented-ui="r-rect l-rect" class="manga-in-thread">
-            {#if manga_item !== ""}
-              {manga_item}
-            {/if}
+  <div style="height: 100%;display: flex;flex-direction: column;">
+    <div class="settings-header">
+      <input
+        type="text"
+        placeholder="Number of threads"
+        value={threadCount}
+        on:change={onThreadCountChange}
+        style="text-align: center;"
+      />
+    </div>
+    <div class="main-scrollbar" style="overflow: auto;">
+      {#key mangaInThread}
+        {#each mangaInThread as manga_item}
+          <div style="border: solid 1px var(--primary-color);width: 99%;">
+            <div class="manga-in-thread-wrapper">
+              <div data-augmented-ui="r-rect l-rect" class="manga-in-thread">
+                {#if manga_item !== ""}
+                  {manga_item}
+                {/if}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    {/each}
-  {/key}
+        {/each}
+      {/key}
+    </div>
+  </div>
 </dialog>
 
 <div class="progress-area-wrapper">
@@ -252,7 +248,7 @@
     height: 20px;
     background: transparent;
     color: var(--primary-color);
-    border: none;
+    border: 1px solid var(--primary-color);
   }
 
   input[type="text"]:focus-visible {

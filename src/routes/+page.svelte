@@ -10,8 +10,9 @@
   import Search from "$lib/search.svelte";
   import { invoke } from "@tauri-apps/api/core";
   import Random from "../lib/icon/random.svelte";
-  import { open } from "@tauri-apps/plugin-shell";
   import dataStore from "$lib/data_store";
+  import Refresh from "$lib/icon/refresh.svelte";
+  import DeleteHistory from "$lib/icon/delete_history.svelte";
 
   let showAllMangas = false;
 
@@ -27,6 +28,11 @@
 
   let mangaSortedAndFiltered: any[];
   let mangaFinal: any[];
+  let mangaSample: any[] = [];
+  let shuffleListDialog: HTMLDialogElement;
+
+  $: shuffleSample = false;
+  $: sampleCount = 5;
 
   $: listLength = list.length;
 
@@ -89,6 +95,18 @@
         }
       }
     });
+
+    shuffleListDialog.addEventListener("click", function (event) {
+      var rect = shuffleListDialog.getBoundingClientRect();
+      var isInDialog =
+        rect.top <= event.clientY &&
+        event.clientY <= rect.top + rect.height &&
+        rect.left <= event.clientX &&
+        event.clientX <= rect.left + rect.width;
+      if (!isInDialog) {
+        shuffleListDialog.close();
+      }
+    });
   });
 
   function eventEmit() {
@@ -98,41 +116,43 @@
   }
 
   function openRandom() {
-    dataSaving();
+    shuffleListDialog.showModal();
   }
 
   async function dataSaving() {
-    let data: any[] | null = await dataStore.get("savedUrlList");
+    mangaSample = [];
+    for (let i = 0; i < sampleCount; i++) {
+      let data: any[] | null = await dataStore.get("savedUrlList");
 
-    if (data != null) {
-      let savedUrlList: any[] = [...data];
-      let shuffledArray = shuffleArray(list);
-
-      if (savedUrlList.length == list.length) {
-        await dataStore.set("savedUrlList", []);
-        savedUrlList = [];
-      }
-
-      // Loop through each URL in the list
-      for (let urlIndex = 0; urlIndex < shuffledArray.length; urlIndex++) {
-        let url = shuffledArray[urlIndex]["url"];
-
-        // Check if the URL is already in the saved list
-        if (!savedUrlList.includes(url)) {
-          await open(url); // Open the URL using a hypothetical open function
-          savedUrlList.push(url); // Add the URL to the saved list
-          await dataStore.set("savedUrlList", savedUrlList);
-          savedUrlListLength = savedUrlList.length;
-          break;
+      if (data != null) {
+        let shuffledArray = [...list];
+        let savedUrlList: any[] = [...data];
+        if (shuffleSample) {
+          shuffledArray = shuffleArray(shuffledArray);
         }
-      }
-    } else {
-      await dataStore.set("savedUrlList", []);
-    }
-  }
 
-  function getRandom(array: any[]) {
-    return list[Math.floor(Math.random() * array.length)];
+        if (savedUrlList.length == list.length) {
+          await dataStore.set("savedUrlList", []);
+          savedUrlList = [];
+        }
+
+        // Loop through each URL in the list
+        for (let urlIndex = 0; urlIndex < shuffledArray.length; urlIndex++) {
+          let url = shuffledArray[urlIndex]["url"];
+
+          // Check if the URL is already in the saved list
+          if (!savedUrlList.includes(url)) {
+            mangaSample = [...mangaSample, shuffledArray[urlIndex]];
+            savedUrlList.push(url); // Add the URL to the saved list
+            await dataStore.set("savedUrlList", savedUrlList);
+            savedUrlListLength = savedUrlList.length;
+            break;
+          }
+        }
+      } else {
+        await dataStore.set("savedUrlList", []);
+      }
+    }
   }
 
   function shuffleArray(array: any[]) {
@@ -143,7 +163,38 @@
     }
     return returnArray;
   }
+
+  function clearRandomHistory() {
+    dataStore.delete("savedUrlList");
+  }
 </script>
+
+<dialog bind:this={shuffleListDialog} on:close class="main-scrollbar">
+  <div style="display: flex;flex-direction: column;height: 100%;">
+    <div
+      style="display: flex;flex-direction: row; justify-content: space-between;"
+    >
+      <Toggle label="Shuffle" bind:toggled={shuffleSample} />
+      <input
+        type="text"
+        placeholder="Number of threads"
+        bind:value={sampleCount}
+        style="text-align: center;"
+      />
+      <button class="btn" on:click={() => dataSaving()}> <Refresh /> </button>
+      <button class="btn" on:click={clearRandomHistory}>
+        <DeleteHistory />
+      </button>
+    </div>
+    <div class=" manga-list">
+      {#key mangaSample}
+        {#each mangaSample as manga_item}
+          <Manga propValue={manga_item}></Manga>
+        {/each}
+      {/key}
+    </div>
+  </div>
+</dialog>
 
 <div data-tauri-drag-region class="app-bar">
   <Titlebar bind:selectedTab={modeSelected} />
@@ -161,14 +212,14 @@
           <Dropdown bind:sort />
         </div>
         <div style="width: 150px;margin-left: 20px;">
-          <Toggle bind:toggled={showAllMangas} />
+          <Toggle label="Show All manga" bind:toggled={showAllMangas} />
         </div>
 
         <div>
           <Search bind:searchText />
         </div>
 
-        <button class="search-btn" on:click={openRandom}>
+        <button class="btn" on:click={openRandom}>
           <Random />
         </button>
         <div class="label">
@@ -259,7 +310,7 @@
     cursor: wait;
   }
 
-  .search-btn {
+  .btn {
     background: transparent;
     border: none;
     cursor: pointer;
@@ -268,5 +319,33 @@
 
   .label {
     color: var(--primary-color);
+  }
+
+  dialog {
+    border-radius: 5px;
+    border-width: 1px;
+    transition: all 2s;
+    width: 90%;
+    z-index: 2;
+    height: 70%;
+    padding: 20px;
+    background: var(--background-color);
+    border: var(--border);
+  }
+
+  dialog::backdrop {
+    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
+    animation: fade-in 1s;
+  }
+
+  input[type="text"] {
+    height: 20px;
+    background: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+  }
+
+  input[type="text"]:focus-visible {
+    outline: none !important;
   }
 </style>

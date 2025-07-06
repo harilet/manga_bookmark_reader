@@ -1,5 +1,6 @@
 <script lang="ts">
   export let toggled = false;
+  export let label='';
 
   function toggleState() {
     toggled = !toggled;
@@ -7,7 +8,7 @@
 </script>
 
 <div class="toggle">
-  <div class="label">Show All manga</div>
+  <div class="label">{label}</div>
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -25,14 +26,13 @@
 
 <style>
   .toggle {
-    width: 100%;
     display: flex;
-    justify-content: space-between;
     align-items: center;
   }
 
   .label {
     color: var(--primary-color);
+    margin-right: 10px;
   }
 
   .toggle-button-wrapper {
