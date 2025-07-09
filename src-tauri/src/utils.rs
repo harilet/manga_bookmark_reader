@@ -57,6 +57,7 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
                             || url.contains("manganato")
                             || url.contains("manhwaclan")
                             || url.contains("mangadex")
+                            || url.contains("flamecomics")
                         {
                             index += 1;
                             result_data.push(BookmarkData {

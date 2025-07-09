@@ -137,6 +137,14 @@ async fn get_manga(app_handle: AppHandle) {
                             } else {
                                 payload.error = true;
                             }
+                        } else if manga_data.url.contains("flamecomics") {
+                            if response.contains(&manga_data.name.clone()) {
+                                if response.contains("Next Chapter") {
+                                    payload.remaining_chapters = "1".to_string();
+                                } else {
+                                    payload.remaining_chapters = "0".to_string();
+                                }
+                            }
                         } else if manga_data.url.contains("asuracomic") {
                             if response.contains("rounded-full cursor-not-allowed") {
                                 payload.remaining_chapters = "0".to_string();
