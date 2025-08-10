@@ -133,6 +133,8 @@ pub(crate) fn get_remaining_chapters(response: String, site: String) -> String {
         return natomanga_manganato_remaining_chapters(response);
     } else if site == "manhwaclan".to_owned() {
         return manhwaclan_remaining_chapters(response);
+    } else if site == "asuracomic".to_owned() {
+        return asuracomic_remaining_chapters(response);
     } else {
         return '0'.to_string();
     }
@@ -188,4 +190,28 @@ fn natomanga_manganato_remaining_chapters(response: String) -> String {
     }
 
     return selected_index.to_string();
+}
+
+fn asuracomic_remaining_chapters(response: String) -> String {
+    let start_pos = response
+        .find("selectedChapter")
+        .unwrap_or(0)
+        - 3;
+    let response_2 = &response[start_pos..];
+
+    let end_bytes = response_2.find("}]").unwrap()+2;
+
+    let response_3 = &response_2[..end_bytes];
+    let mut response_4=response_3.replace("\\\"", "\"");
+    response_4.push('}');
+    
+    let chapter_obj:Value=serde_json::from_str(&response_4).unwrap();
+
+    let current_chapter=chapter_obj.get("selectedChapter").unwrap().as_str().unwrap();
+
+    let chapter_list=chapter_obj.get("chapterMapData").unwrap().as_array().unwrap();
+
+    let index=chapter_list.iter().position(|r| r.get("label").unwrap()==current_chapter).unwrap();
+
+    return index.to_string();
 }

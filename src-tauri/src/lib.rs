@@ -151,7 +151,10 @@ async fn get_manga(app_handle: AppHandle) {
                             if response.contains("rounded-full cursor-not-allowed") {
                                 payload.remaining_chapters = "0".to_string();
                             } else {
-                                payload.remaining_chapters = "1".to_string();
+                                payload.remaining_chapters = get_remaining_chapters(
+                                    response.clone(),
+                                    "asuracomic".to_owned(),
+                                );
                             }
                         } else if manga_data.url.contains("mangadex") {
                             payload.remaining_chapters = "1".to_string();
