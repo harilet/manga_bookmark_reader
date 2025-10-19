@@ -33,75 +33,25 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
             let mut index = 0;
 
             for j in all_anime.iter() {
-                match j.get("url") {
-                    Some(url_value) => {
-                        let url = url_value.as_str().unwrap();
-                        if url.contains("chapmanganato") {
-                            let name = j.get("name").unwrap().as_str().unwrap();
-                            let new_url = name_to_url(name);
-
-                            index += 1;
-                            result_data.push(BookmarkData {
-                                name: j.get("name").unwrap().as_str().unwrap().to_string(),
-                                url: new_url,
-                                date_added: j
-                                    .get("date_added")
-                                    .unwrap()
-                                    .as_str()
-                                    .unwrap()
-                                    .to_string(),
-                                index,
-                            });
-                        } else if url.contains("asuracomic")
-                            || url.contains("natomanga")
-                            || url.contains("manganato")
-                            || url.contains("manhwaclan")
-                            || url.contains("mangadex")
-                            || url.contains("flamecomics")
-                            || url.contains("likemanga")
-                        {
-                            index += 1;
-                            result_data.push(BookmarkData {
-                                name: j.get("name").unwrap().as_str().unwrap().to_string(),
-                                url: j.get("url").unwrap().as_str().unwrap().to_string(),
-                                date_added: j
-                                    .get("date_added")
-                                    .unwrap()
-                                    .as_str()
-                                    .unwrap()
-                                    .to_string(),
-                                index,
-                            });
-                        }
-                    }
-                    None => {}
-                }
+                index += 1;
+                let url = match j.get("url") {
+                    Some(url_data) => match url_data.as_str() {
+                        Some(url_str_data) => url_str_data.to_string(),
+                        None => "".to_string(),
+                    },
+                    None => "".to_string(),
+                };
+                result_data.push(BookmarkData {
+                    name: j.get("name").unwrap().as_str().unwrap().to_string(),
+                    url: url,
+                    date_added: j.get("date_added").unwrap().as_str().unwrap().to_string(),
+                    index,
+                });
             }
             break;
         }
     }
     return result_data.clone();
-}
-
-fn name_to_url(name: &str) -> String {
-    let end_pos = name.find(" Chapter").unwrap();
-    let res_name1_temp: &String = &name[..end_pos]
-        .chars()
-        .filter(|c| c.is_alphanumeric() || c == &'-' || c == &' ')
-        .collect();
-    let res_name1 = res_name1_temp.replace(" ", "-").to_ascii_lowercase();
-
-    let name12 = &name[name.find("Chapter").unwrap()..];
-    let temp: Vec<_> = name12.match_indices(" ").collect();
-    let res_name2 = &name12[8..temp.get(1).unwrap().0]
-        .replace(" ", "-")
-        .replace(".", "-")
-        .replace(":", "");
-
-    return format!(
-        "https://www.manganato.gg/manga/{}/chapter-{}",
-        res_name1, res_name2
-    );
 }
 
 pub(crate) fn convert_date(j: String) -> DelayedFormat<StrftimeItems<'static>> {
@@ -194,25 +144,33 @@ fn natomanga_manganato_remaining_chapters(response: String) -> String {
 }
 
 fn asuracomic_remaining_chapters(response: String) -> String {
-    let start_pos = response
-        .find("selectedChapter")
-        .unwrap_or(0)
-        - 3;
+    let start_pos = response.find("selectedChapter").unwrap_or(0) - 3;
     let response_2 = &response[start_pos..];
 
-    let end_bytes = response_2.find("}]").unwrap()+2;
+    let end_bytes = response_2.find("}]").unwrap() + 2;
 
     let response_3 = &response_2[..end_bytes];
-    let mut response_4=response_3.replace("\\\"", "\"");
+    let mut response_4 = response_3.replace("\\\"", "\"");
     response_4.push('}');
-    
-    let chapter_obj:Value=serde_json::from_str(&response_4).unwrap();
 
-    let current_chapter=chapter_obj.get("selectedChapter").unwrap().as_str().unwrap();
+    let chapter_obj: Value = serde_json::from_str(&response_4).unwrap();
 
-    let chapter_list=chapter_obj.get("chapterMapData").unwrap().as_array().unwrap();
+    let current_chapter = chapter_obj
+        .get("selectedChapter")
+        .unwrap()
+        .as_str()
+        .unwrap();
 
-    let index=chapter_list.iter().position(|r| r.get("label").unwrap()==current_chapter).unwrap();
+    let chapter_list = chapter_obj
+        .get("chapterMapData")
+        .unwrap()
+        .as_array()
+        .unwrap();
+
+    let index = chapter_list
+        .iter()
+        .position(|r| r.get("label").unwrap() == current_chapter)
+        .unwrap();
 
     return index.to_string();
 }

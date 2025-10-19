@@ -168,6 +168,17 @@ async fn get_manga(app_handle: AppHandle) {
                             } else {
                                 payload.error = true;
                             }
+                        } else if manga_data.url.contains("hto.to") {
+                            println!("{:#?}", response);
+                            if response.contains("Prev Chapter") {
+                                if response.contains("Next Chapter") {
+                                    payload.remaining_chapters = "1".to_string();
+                                } else {
+                                    payload.remaining_chapters = "0".to_string();
+                                }
+                            } else {
+                                payload.error = true;
+                            }
                         } else {
                             payload.error = true;
                         }
