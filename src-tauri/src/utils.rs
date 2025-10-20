@@ -33,10 +33,26 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
             let mut index = 0;
 
             for j in all_anime.iter() {
+                let name = match j.get("name") {
+                    Some(name_data) => match name_data.as_str() {
+                        Some(name_str_data) => name_str_data,
+                        None => "",
+                    },
+                    None => "",
+                };
+                if name == "series" {
+                    continue;
+                }
                 index += 1;
                 let url = match j.get("url") {
                     Some(url_data) => match url_data.as_str() {
-                        Some(url_str_data) => url_str_data.to_string(),
+                        Some(url_str_data) => {
+                           if url_str_data.contains("natomanga.com"){
+                            url_str_data.replace("natomanga.com", "manganato.gg").to_string()
+                           }else{
+                            url_str_data.to_string()
+                           }
+                        },
                         None => "".to_string(),
                     },
                     None => "".to_string(),
