@@ -1,5 +1,10 @@
 mod utils;
 
+use serde::Deserialize;
+use std::env;
+use std::error::Error;
+use std::fs;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
@@ -8,6 +13,8 @@ use tauri::window::{Effect, EffectsBuilder};
 use tauri::AppHandle;
 use tauri::{Emitter, Manager};
 use utils::{convert_date, get_html, get_remaining_chapters, read_bookmark};
+
+use crate::utils::BookmarkData;
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -27,6 +34,16 @@ struct PayloadMangaSize {
 #[derive(Default)]
 struct AppData {
     thread: usize,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+struct Rule {
+    site_match: Vec<String>,
+    page_check: Option<String>,
+    main_check: Option<String>,
+    #[serde(rename = "type")]
+    rule_type: String,
+    value: Option<String>,
 }
 
 type CompleteQueue = deadqueue::limited::Queue<usize>;
@@ -77,6 +94,13 @@ async fn get_manga(app_handle: AppHandle) {
         .emit("scan_data", PayloadMangaSize { size: data.len() })
         .unwrap();
 
+    let exe_path = get_exe_dir().unwrap();
+    let rules_file = exe_path.join("config\\rules.json");
+    let json_data = fs::read_to_string(rules_file).unwrap();
+    let rules: Vec<Rule> = serde_json::from_str(&json_data).unwrap();
+
+    println!("{:#?}", rules);
+
     let mut prev_thread_count = 0;
     loop {
         if prev_thread_count != complete_queue.len() {
@@ -97,91 +121,16 @@ async fn get_manga(app_handle: AppHandle) {
                 .emit("threads", format!("{}", prev_thread_count))
                 .unwrap();
 
+            let temp_rules = rules.clone();
+
             let _complete_queue = complete_queue.clone();
             let app_handle_2 = app_handle.app_handle().to_owned();
             thread::Builder::new()
                 .stack_size(0)
                 .spawn(move || {
                     block_on(async {
-                        let response = get_html(&manga_data.url).await;
-                        let dt = convert_date(manga_data.date_added.clone());
-                        let mut payload = Payload {
-                            index: manga_data.index,
-                            name: manga_data.name.clone(),
-                            date_time: dt.to_string(),
-                            remaining_chapters: 0.to_string(),
-                            url: manga_data.url.clone(),
-                            error: false,
-                        };
-                        if manga_data.url.contains("natomanga")
-                            || manga_data.url.contains("manganato")
-                        {
-                            if response.contains("PREV CHAPTER") {
-                                if response.contains("class=\"back\"") {
-                                    payload.remaining_chapters = get_remaining_chapters(
-                                        response.clone(),
-                                        "natomanga/manganato".to_owned(),
-                                    );
-                                }
-                            } else {
-                                payload.error = true;
-                            }
-                        } else if manga_data.url.contains("manhwaclan") {
-                            if response.contains("class=\"btn prev_page\"") {
-                                if response.contains("class=\"btn next_page\"") {
-                                    payload.remaining_chapters = get_remaining_chapters(
-                                        response.clone(),
-                                        "manhwaclan".to_owned(),
-                                    );
-                                }
-                            } else {
-                                payload.error = true;
-                            }
-                        } else if manga_data.url.contains("flamecomics") {
-                            if response.contains("Previous Chapter") {
-                                if response.contains("Next Chapter") {
-                                    payload.remaining_chapters = "1".to_string();
-                                } else {
-                                    payload.remaining_chapters = "0".to_string();
-                                }
-                            } else {
-                                payload.error = true;
-                            }
-                        } else if manga_data.url.contains("asuracomic") {
-                            if response.contains("rounded-full cursor-not-allowed") {
-                                payload.remaining_chapters = "0".to_string();
-                            } else {
-                                payload.remaining_chapters = get_remaining_chapters(
-                                    response.clone(),
-                                    "asuracomic".to_owned(),
-                                );
-                            }
-                        } else if manga_data.url.contains("mangadex") {
-                            payload.remaining_chapters = "1".to_string();
-                        } else if manga_data.url.contains("likemanga") {
-                            if response.contains("prev_page") {
-                                if response.contains("next_page") {
-                                    payload.remaining_chapters = "1".to_string();
-                                } else {
-                                    payload.remaining_chapters = "0".to_string();
-                                }
-                            } else {
-                                payload.error = true;
-                            }
-                        } else if manga_data.url.contains("hto.to") {
-                            println!("{:#?}", response);
-                            if response.contains("Prev Chapter") {
-                                if response.contains("Next Chapter") {
-                                    payload.remaining_chapters = "1".to_string();
-                                } else {
-                                    payload.remaining_chapters = "0".to_string();
-                                }
-                            } else {
-                                payload.error = true;
-                            }
-                        } else {
-                            payload.error = true;
-                        }
+                        let payload = bookmark_check(manga_data.clone(), temp_rules).await;
+
                         app_handle_2.emit("scan_data", payload).unwrap();
                         _complete_queue.pop().await;
                         app_handle_2
@@ -199,4 +148,103 @@ async fn get_manga(app_handle: AppHandle) {
     }
 
     app_handle.emit("scan_data", "done").unwrap();
+}
+
+async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
+    let response = get_html(&manga_data.url).await;
+    let dt = convert_date(manga_data.date_added.clone());
+    let mut payload = Payload {
+        index: manga_data.index,
+        name: manga_data.name.clone(),
+        date_time: dt.to_string(),
+        remaining_chapters: 0.to_string(),
+        url: manga_data.url.clone(),
+        error: false,
+    };
+
+    for rule in rules {
+        if !rule.site_match.iter().any(|s| manga_data.url.contains(s)) {
+            continue;
+        }
+
+        match rule.page_check {
+            Some(page_check_data) => {
+                if !response.contains(&page_check_data) {
+                    payload.error = true;
+                    return payload;
+                }
+            }
+            None => {}
+        }
+
+        match rule.rule_type.as_str() {
+            "static" => {
+                let static_remaining = match rule.value {
+                    Some(value) => value,
+                    None => "1".to_string(),
+                };
+                payload.remaining_chapters = static_remaining;
+            }
+            "auto" => match rule.main_check {
+                Some(main_rule) => {
+                    if response.contains(&main_rule) {
+                        payload.remaining_chapters =
+                            get_remaining_chapters(response.clone(), rule.site_match.join("/"));
+                    }
+                }
+                None => {
+                    payload.error = true;
+                    return payload;
+                }
+            },
+            "inverse_auto" => match rule.main_check {
+                Some(main_rule) => {
+                    if !response.contains(&main_rule) {
+                        payload.remaining_chapters =
+                            get_remaining_chapters(response.clone(), rule.site_match.join("/"));
+                    }
+                }
+                None => {
+                    payload.error = true;
+                    return payload;
+                }
+            },
+            "toggle" => match rule.main_check {
+                Some(main_rule) => {
+                    if response.contains(&main_rule) {
+                        payload.remaining_chapters = "1".to_string();
+                    }
+                }
+                None => {
+                    payload.error = true;
+                    return payload;
+                }
+            },
+            "inverse_toggle" => match rule.main_check {
+                Some(main_rule) => {
+                    if !response.contains(&main_rule) {
+                        payload.remaining_chapters = "1".to_string();
+                    }
+                }
+                None => {
+                    payload.error = true;
+                    return payload;
+                }
+            },
+            _ => {
+                payload.error = true;
+                return payload;
+            }
+        }
+    }
+
+    return payload;
+}
+
+fn get_exe_dir() -> Result<PathBuf, Box<dyn Error>> {
+    let exe_path = env::current_exe()?;
+    return Ok(exe_path
+        .parent()
+        .expect("Failed to get executable directory")
+        .to_path_buf());
 }
