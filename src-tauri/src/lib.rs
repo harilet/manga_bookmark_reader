@@ -159,7 +159,7 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
         date_time: dt.to_string(),
         remaining_chapters: 0.to_string(),
         url: manga_data.url.clone(),
-        error: false,
+        error: true,
     };
 
     for rule in rules {
@@ -170,7 +170,6 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
         match rule.page_check {
             Some(page_check_data) => {
                 if !response.contains(&page_check_data) {
-                    payload.error = true;
                     return payload;
                 }
             }
@@ -183,6 +182,7 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
                     Some(value) => value,
                     None => "1".to_string(),
                 };
+                payload.error = false;
                 payload.remaining_chapters = static_remaining;
             }
             "auto" => match rule.main_check {
@@ -191,9 +191,9 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
                         payload.remaining_chapters =
                             get_remaining_chapters(response.clone(), rule.site_match.join("/"));
                     }
+                    payload.error = false;
                 }
                 None => {
-                    payload.error = true;
                     return payload;
                 }
             },
@@ -203,9 +203,9 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
                         payload.remaining_chapters =
                             get_remaining_chapters(response.clone(), rule.site_match.join("/"));
                     }
+                    payload.error = false;
                 }
                 None => {
-                    payload.error = true;
                     return payload;
                 }
             },
@@ -214,9 +214,9 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
                     if response.contains(&main_rule) {
                         payload.remaining_chapters = "1".to_string();
                     }
+                    payload.error = false;
                 }
                 None => {
-                    payload.error = true;
                     return payload;
                 }
             },
@@ -225,14 +225,13 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
                     if !response.contains(&main_rule) {
                         payload.remaining_chapters = "1".to_string();
                     }
+                    payload.error = false;
                 }
                 None => {
-                    payload.error = true;
                     return payload;
                 }
             },
             _ => {
-                payload.error = true;
                 return payload;
             }
         }
