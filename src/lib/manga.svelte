@@ -53,7 +53,7 @@
 
 <button
     on:click={openUrl}
-    class="button-wrappper"
+    class="button-wrappper all-corner-lt-rb"
     data-augmented-ui="tr-clip bl-clip border"
 >
     <div class="main-manga-area {borderClass} font-style">
@@ -88,6 +88,7 @@
         align-items: center;
         justify-content: center;
     }
+
     .button-wrappper {
         flex-grow: 1;
         padding: 0px;
@@ -97,9 +98,39 @@
         margin-bottom: 10px;
         background: #0f172a66;
     }
+
     .button-wrappper:hover {
-        background: #1e293b99;
+        background-color: #1e293b99;
+        --w: 3px; /* stroke width */
+        --l: 26px; /* corner length */
+
+        background-image:
+          /* top-left horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* top-left vertical */ linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right vertical */
+            linear-gradient(var(--primary-color) 0 0),
+            /* panel background */ linear-gradient(180deg, #0b1e2e, #081521);
+
+        background-size:
+            var(--l) var(--w),
+            var(--w) var(--l),
+            var(--l) var(--w),
+            var(--w) var(--l),
+            100% 100%;
+
+        background-position:
+            left top,
+            left top,
+            right bottom,
+            right bottom,
+            0 0;
+
+        background-repeat: no-repeat;
     }
+
     .main-manga-area {
         border-radius: 5px;
         cursor: pointer;

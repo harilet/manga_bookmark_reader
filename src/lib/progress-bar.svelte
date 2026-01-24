@@ -91,7 +91,11 @@
     }
 </script>
 
-<dialog bind:this={mangaInThreadDialog} on:close>
+<dialog
+    data-augmented-ui="tr-clip bl-clip border"
+    bind:this={mangaInThreadDialog}
+    on:close
+>
     <div style="height: 100%;display: flex;flex-direction: column;">
         <div class="settings-header">
             <input
@@ -224,6 +228,8 @@
     }
 
     dialog {
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
         border-radius: 5px;
         border-width: 1px;
         transition: all 2s;
@@ -231,8 +237,37 @@
         z-index: 2;
         height: 70%;
         padding: 20px;
-        background: var(--background-color);
+        background-color: var(--background-color);
         border: var(--border);
+
+        --w: 3px; /* stroke width */
+        --l: 26px; /* corner length */
+
+        background-image:
+          /* top-left horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* top-left vertical */ linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right vertical */
+            linear-gradient(var(--primary-color) 0 0),
+            /* panel background */ linear-gradient(180deg, #0b1e2e, #081521);
+
+        background-size:
+            var(--l) var(--w),
+            var(--w) var(--l),
+            var(--l) var(--w),
+            var(--w) var(--l),
+            100% 100%;
+
+        background-position:
+            left top,
+            left top,
+            right bottom,
+            right bottom,
+            0 0;
+
+        background-repeat: no-repeat;
     }
 
     dialog::backdrop {

@@ -152,6 +152,7 @@ async fn get_manga(app_handle: AppHandle) {
 
 async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
     let response: String = get_html(&manga_data.url).await;
+    // let response = "".to_string();
 
     let dt = convert_date(manga_data.date_added.clone());
     let mut payload = Payload {

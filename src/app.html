@@ -66,10 +66,55 @@
             .app {
                 display: contents;
             }
+
+            .all-corner-stroke {
+                --w: 3px; /* stroke thickness */
+                --l: 26px; /* corner length */
+
+                background-image:
+                /* top-left */
+                    linear-gradient(var(--primary-color) 0 0),
+                    linear-gradient(var(--primary-color) 0 0),
+                    /* top-right */ linear-gradient(var(--primary-color) 0 0),
+                    linear-gradient(var(--primary-color) 0 0),
+                    /* bottom-left */ linear-gradient(var(--primary-color) 0 0),
+                    linear-gradient(var(--primary-color) 0 0),
+                    /* bottom-right */ linear-gradient(var(--primary-color) 0 0),
+                    linear-gradient(var(--primary-color) 0 0),
+                    /* panel background */
+                    linear-gradient(180deg, #0b1e2e, #081521);
+
+                background-size:
+                    var(--l) var(--w),
+                    var(--w) var(--l),
+                    var(--l) var(--w),
+                    var(--w) var(--l),
+                    var(--l) var(--w),
+                    var(--w) var(--l),
+                    var(--l) var(--w),
+                    var(--w) var(--l),
+                    100% 100%;
+
+                background-position:
+                    left top,
+                    left top,
+                    right top,
+                    right top,
+                    left bottom,
+                    left bottom,
+                    right bottom,
+                    right bottom,
+                    0 0;
+
+                background-repeat: no-repeat;
+            }
         </style>
     </head>
 
-    <body data-sveltekit-preload-data="hover" class="body font-style">
+    <body
+        data-sveltekit-preload-data="hover"
+        class="body font-style all-corner-stroke"
+    >
         <div class="app">%sveltekit.body%</div>
     </body>
 </html>
