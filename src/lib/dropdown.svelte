@@ -1,65 +1,65 @@
 <script lang="ts">
-  export let sort = "Default";
-  let showDropDown = false;
+    export let sort = "Default";
+    let showDropDown = false;
 
-  function dropdownBtnClicked() {
-    showDropDown = !showDropDown;
-  }
+    function dropdownBtnClicked() {
+        showDropDown = !showDropDown;
+    }
 
-  function setOption(option: string) {
-    sort = option;
-    showDropDown = false;
-  }
+    function setOption(option: string) {
+        sort = option;
+        showDropDown = false;
+    }
 </script>
 
-<div class="dropdown">
-  <button data-augmented-ui="
-   tl-2-clip-x br-2-clip-x
-" on:click="{dropdownBtnClicked}" class="dropbtn">
+<button
+    data-augmented-ui="tr-clip bl-clip border"
+    on:click={dropdownBtnClicked}
+    class="dropbtn"
+>
     {sort}
-  </button>
-  {#if showDropDown}
-    <div class="dropdown-content">
-      <button on:click="{() => setOption('Default')}">Default</button>
-      <button on:click="{() => setOption('Index')}">Index</button>
-      <button on:click="{() => setOption('Remaining')}">Remaining</button>
+</button>
+{#if showDropDown}
+    <div class="dropdown-content" data-augmented-ui="tr-clip bl-clip border">
+        <button on:click={() => setOption("Default")}>Default</button>
+        <button on:click={() => setOption("Index")}>Index</button>
+        <button on:click={() => setOption("Remaining")}>Remaining</button>
     </div>
-  {/if}
-</div>
+{/if}
 
 <style>
-  .dropdown {
-    width: 100%;
-    background: var(--primary-color);
-  }
+    .dropbtn {
+        width: 100%;
+        background: var(--background-color);
+        color: var(--primary-color);
+        border: none;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 5px;
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
+    }
 
-  .dropbtn {
-    width: 100%;
-    background: var(--background-color);
-    color: var(--primary-color);
-    border: var(--border);
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    .dropdown-content {
+        width: auto;
+        position: absolute;
+        background-color: var(--background-color);
+        color: var(--primary-color);
+        padding: 10px;
+        min-width: 160px;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
+    }
 
-  .dropdown-content {
-    width: auto;
-    position: absolute;
-    background-color: var(--background-color);
-    color: var(--primary-color);
-
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .dropdown-content button {
-    border: var(--border);
-    background: var(--background-color);
-    color: var(--primary-color);
-  }
+    .dropdown-content button {
+        border: var(--border);
+        background: var(--background-color);
+        color: var(--primary-color);
+        margin: 5px;
+    }
 </style>

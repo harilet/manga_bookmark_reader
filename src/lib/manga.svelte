@@ -1,216 +1,184 @@
 <script lang="ts">
-  import { open } from "@tauri-apps/plugin-shell";
-  import dataStore from "./data_store";
-  import ContextMenu from "./contextMenu.svelte";
+    import { open } from "@tauri-apps/plugin-shell";
+    import dataStore from "./data_store";
+    import ContextMenu from "./contextMenu.svelte";
 
-  export let propValue: any;
+    export let propValue: any;
 
-  let borderClass = "";
-  let reTrigger = false;
+    let borderClass = "";
+    let reTrigger = false;
 
-  $: {
-    reTrigger = !reTrigger;
-    setClasses();
-  }
-
-  async function setClasses() {
-    if (await dataStore.get(getUrlWithoutChapter())) {
-      borderClass = "warning-class";
-    } else {
-      borderClass = "normal-class";
-    }
-  }
-
-  function openUrl() {
-    open(propValue["url"]);
-  }
-
-  function searchForManga() {
-    let name: string = propValue["name"];
-    let updatedName = name
-      .slice(0, name.indexOf(" Chapter"))
-      .replaceAll(" ", "_");
-    open("https://www.natomanga.com/search/story/" + updatedName);
-  }
-
-  async function setChapterWarning(event: any) {
-    event.stopPropagation();
-
-    let url = getUrlWithoutChapter();
-    if (await dataStore.get(url)) {
-      await dataStore.delete(url);
-    } else {
-      await dataStore.set(url, true);
-    }
-    await dataStore.save();
-    reTrigger = !reTrigger;
-  }
-
-  function getUrlWithoutChapter() {
-    return propValue["url"].split("/").slice(0, -1).join("/");
-  }
-
-  function ContextMenuHandler(event: any, sId: string) {
-    switch (sId) {
-      case "mark_issue":
-        setChapterWarning(event);
-        break;
-      case "s-Natomanga":
-        searchForManga();
-        break;
-      case "s-asuracomic":
-        asuraSearchForManga();
-        break;
-      default:
-        break;
-    }
-  }
-
-  function asuraSearchForManga() {
-    let name: string = propValue["name"];
-    let updatedName = name
-      .slice(0, name.indexOf(" Chapter"))
-      .replace("Read ", "")
-      .toLowerCase();
-
-    const lastIndex = updatedName.lastIndexOf(" manga");
-    if (lastIndex !== -1) {
-      updatedName =
-        updatedName.slice(0, lastIndex) +
-        updatedName.slice(lastIndex + " manga".length);
+    $: {
+        reTrigger = !reTrigger;
+        setClasses();
     }
 
-    open("https://asuracomic.net/series?page=1&name=" + encodeURI(updatedName));
-  }
+    async function setClasses() {
+        if (await dataStore.get(getUrlWithoutChapter())) {
+            borderClass = "warning-class";
+        } else {
+            borderClass = "normal-class";
+        }
+    }
+
+    function openUrl() {
+        open(propValue["url"]);
+    }
+
+    async function setChapterWarning(event: any) {
+        event.stopPropagation();
+
+        let url = getUrlWithoutChapter();
+        if (await dataStore.get(url)) {
+            await dataStore.delete(url);
+        } else {
+            await dataStore.set(url, true);
+        }
+        await dataStore.save();
+        reTrigger = !reTrigger;
+    }
+
+    function getUrlWithoutChapter() {
+        return propValue["url"].split("/").slice(0, -1).join("/");
+    }
+
+    function getMangaHost() {
+        let url = propValue["url"];
+        let host = url.split("/")[2];
+        host = host.replace("www.", "");
+        host = host.split(".")[0];
+        return host;
+    }
 </script>
 
-<button on:click={openUrl} class="button-wrappper">
-  <ContextMenu
-    items={[
-      { id: "mark_issue", name: "Mark issue" },
-      {
-        Group: [
-          {
-            Search: [
-              { id: "s-Natomanga", name: "Natomanga" },
-              { id: "s-asuracomic", name: "asuracomic" },
-            ],
-          },
-        ],
-      },
-    ]}
-    onClick={ContextMenuHandler}
-  >
-    <div
-      data-augmented-ui="
-        tr-2-clip-x tl-2-clip-x br-2-clip-x
-      "
-      class="main-manga-area {borderClass} font-style"
-    >
-      <div class="index-date">
-        <div class="name">
-          {propValue["name"]}
+<button
+    on:click={openUrl}
+    class="button-wrappper"
+    data-augmented-ui="tr-clip bl-clip border"
+>
+    <div class="main-manga-area {borderClass} font-style">
+        <div data-augmented-ui="all-hex-alt border" class="section-1">
+            {propValue["index"]}
         </div>
-        <div class="date-time">
-          {propValue["date_time"]}
+        <div class="section-2">
+            <div class="name">
+                {propValue["name"]}
+            </div>
+            <div>
+                {getMangaHost()}
+            </div>
         </div>
-      </div>
 
-      <div class="remaining-chapter">
-        <div class="remaining-chapter-text">
-          {propValue["remaining_chapters"]}
+        <div class="section-3">
+            <div class="date-time">
+                {propValue["date_time"]}
+            </div>
+            <div class="remaining-chapter-text">
+                {propValue["remaining_chapters"]}
+            </div>
         </div>
-      </div>
     </div>
-  </ContextMenu>
 </button>
 
 <style>
-  .button-wrappper {
-    flex-grow: 1;
-    padding: 0px;
-    border: none;
-    background: var(--primary-color);
-  }
-  .main-manga-area {
-    border-radius: 5px;
-    cursor: pointer;
-    padding: 0px;
-    padding-left: 5px;
-    position: relative;
-    background: transparent;
-    text-align: start;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    border-radius: 0px;
-  }
+    .section-1 {
+        --aug-all-width: 50px;
+        --aug-border-all: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .button-wrappper {
+        flex-grow: 1;
+        padding: 0px;
+        border: none;
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
+        margin-bottom: 10px;
+        background: #0f172a66;
+    }
+    .button-wrappper:hover {
+        background: #1e293b99;
+    }
+    .main-manga-area {
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 10px;
+        padding-left: 5px;
+        position: relative;
+        background: transparent;
+        text-align: start;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: 0px;
+    }
 
-  .wrapper-class {
-    padding: 2px;
-    flex: auto;
-  }
+    .wrapper-class {
+        padding: 2px;
+        flex: auto;
+    }
 
-  .warning-class {
-    color: var(--primary-color);
-    border: var(--border);
-    text-shadow:
-      2px 2px 0 var(--background-color),
-      2px -2px 0 var(--background-color),
-      -2px 2px 0 var(--background-color),
-      -2px -2px 0 var(--background-color),
-      2px 0px 0 var(--background-color),
-      0px 2px 0 var(--background-color),
-      -2px 0px 0 var(--background-color),
-      0px -2px 0 var(--background-color);
-    background: repeating-linear-gradient(
-      90deg,
-      var(--primary-color),
-      var(--primary-color) 1px,
-      var(--background-color) 1px,
-      var(--background-color) 3px
-    );
-  }
+    .warning-class {
+        color: var(--primary-color);
+        border: var(--border);
+        text-shadow:
+            2px 2px 0 var(--background-color),
+            2px -2px 0 var(--background-color),
+            -2px 2px 0 var(--background-color),
+            -2px -2px 0 var(--background-color),
+            2px 0px 0 var(--background-color),
+            0px 2px 0 var(--background-color),
+            -2px 0px 0 var(--background-color),
+            0px -2px 0 var(--background-color);
+        background: repeating-linear-gradient(
+            90deg,
+            var(--primary-color),
+            var(--primary-color) 1px,
+            var(--background-color) 1px,
+            var(--background-color) 3px
+        );
+    }
 
-  .normal-class {
-    color: var(--primary-color);
-    border: var(--border);
-    background: var(--background-color);
-  }
+    .normal-class {
+        color: var(--primary-color);
+        border: var(--border);
+    }
 
-  .index-date {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    padding-right: 5px;
-    margin-top: 20px;
-    width: -webkit-fill-available;
-  }
+    .section-2 {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        padding-right: 5px;
+        width: -webkit-fill-available;
+        margin-left: 10px;
+    }
 
-  .date-time {
-    margin-top: 5px;
-    color: gray;
-    white-space: nowrap;
-  }
+    .date-time {
+        margin-top: 5px;
+        color: gray;
+        white-space: nowrap;
+    }
 
-  .name {
-    margin-bottom: 10px;
-    font-weight: 600;
-    font-size: 105%;
-    width: -webkit-fill-available;
-  }
+    .name {
+        margin-bottom: 10px;
+        font-weight: 600;
+        font-size: 105%;
+        width: -webkit-fill-available;
+        color: #cefafe;
+    }
 
-  .remaining-chapter {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-    font-weight: 600;
-    width: 100%;
-  }
+    .section-3 {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        align-items: end;
+        font-weight: 600;
+    }
 
-  .remaining-chapter-text {
-    margin-bottom: 10px;
-    color: var(--secondary-text);
-  }
+    .remaining-chapter-text {
+        margin-bottom: 10px;
+        color: var(--secondary-text);
+    }
 </style>
