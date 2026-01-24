@@ -14,8 +14,9 @@ pub(crate) struct BookmarkData {
 
 pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
     let mut result_data: Vec<BookmarkData> = vec![];
-    let contents = fs::read_to_string("C:\\Users\\Asus\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Bookmarks")
-    .expect("Should have been able to read the file");
+    let contents =
+        fs::read_to_string("/home/cyber/.config/BraveSoftware/Brave-Browser/Default/Bookmarks")
+            .expect("Should have been able to read the file");
 
     let object: Value = serde_json::from_str(&contents).unwrap();
 
@@ -46,13 +47,7 @@ pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
                 index += 1;
                 let url = match j.get("url") {
                     Some(url_data) => match url_data.as_str() {
-                        Some(url_str_data) => {
-                           if url_str_data.contains("natomanga.com"){
-                            url_str_data.replace("natomanga.com", "manganato.gg").to_string()
-                           }else{
-                            url_str_data.to_string()
-                           }
-                        },
+                        Some(url_str_data) => url_str_data.to_string(),
                         None => "".to_string(),
                     },
                     None => "".to_string(),

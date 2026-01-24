@@ -53,6 +53,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             app.manage(Mutex::new(AppData::default()));
 
@@ -83,6 +84,7 @@ fn update_thread_count(app_handle: AppHandle, new_thread_count: u64) {
 async fn get_manga(app_handle: AppHandle) {
     let state = app_handle.state::<Mutex<AppData>>().to_owned();
     let worker_count = state.lock().unwrap().thread;
+
     let data = read_bookmark();
     let mut index = 0;
 
@@ -95,11 +97,10 @@ async fn get_manga(app_handle: AppHandle) {
         .unwrap();
 
     let exe_path = get_exe_dir().unwrap();
-    let rules_file = exe_path.join("config\\rules.json");
+    let rules_file =
+        exe_path.join("/home/cyber/Documents/tauri/manga_bookmark_reader_old/config/rules.json");
     let json_data = fs::read_to_string(rules_file).unwrap();
     let rules: Vec<Rule> = serde_json::from_str(&json_data).unwrap();
-
-    println!("{:#?}", rules);
 
     let mut prev_thread_count = 0;
     loop {
@@ -126,7 +127,6 @@ async fn get_manga(app_handle: AppHandle) {
             let _complete_queue = complete_queue.clone();
             let app_handle_2 = app_handle.app_handle().to_owned();
             thread::Builder::new()
-                .stack_size(0)
                 .spawn(move || {
                     block_on(async {
                         let payload = bookmark_check(manga_data.clone(), temp_rules).await;

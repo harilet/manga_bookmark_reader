@@ -1,0 +1,54 @@
+[
+  {
+    "site_match": ["natomanga", "manganato"],
+    "page_check": "PREV CHAPTER",
+    "main_check": "class=\"back\"",
+    "type": "auto"
+  },
+  {
+    "site_match": ["manhwaclan"],
+    "page_check": "class=\"btn prev_page\"",
+    "main_check": "class=\"btn next_page\"",
+    "type": "auto"
+  },
+  {
+    "site_match": ["flamecomics"],
+    "page_check": "Previous Chapter",
+    "main_check": "Next Chapter",
+    "type": "toggle"
+  },
+  {
+    "site_match": ["asuracomic"],
+    "page_check": "Prev",
+    "main_check": "rounded-full\\s+cursor-not-allowed",
+    "type": "inverse_auto"
+  },
+  {
+    "site_match": ["mangadex"],
+    "type": "static",
+    "value": "1"
+  },
+  {
+    "site_match": ["likemanga"],
+    "page_check": "btn prev_page",
+    "main_check": "next_page",
+    "type": "toggle"
+  },
+  {
+    "site_match": ["hto.to","xbato.com"],
+    "page_check": "Prev Chapter",
+    "main_check": "Next Chapter",
+    "type": "toggle"
+  },
+  {
+    "site_match": ["webtoons"],
+    "type": "static",
+    "value": "1"
+  },
+    {
+    "site_match": ["mangaread"],
+    "page_check": "PREV",
+    "main_check": "next_page",
+    "type": "toggle"
+  }
+]
