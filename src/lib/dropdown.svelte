@@ -30,7 +30,6 @@
 <style>
     .dropbtn {
         width: 100%;
-        background-color: var(--background-color);
         color: var(--primary-color);
         border: none;
         height: 30px;
@@ -52,7 +51,12 @@
             linear-gradient(var(--primary-color) 0 0),
             /* bottom-right vertical */
             linear-gradient(var(--primary-color) 0 0),
-            /* panel background */ linear-gradient(180deg, #0b1e2e, #081521);
+            /* panel background */
+            linear-gradient(
+                    180deg,
+                    var(--background-color),
+                    var(--background-color)
+                );
 
         background-size:
             var(--l) var(--w),
@@ -95,7 +99,12 @@
             linear-gradient(var(--primary-color) 0 0),
             /* bottom-right vertical */
             linear-gradient(var(--primary-color) 0 0),
-            /* panel background */ linear-gradient(180deg, #0b1e2e, #081521);
+            /* panel background */
+            linear-gradient(
+                    180deg,
+                    var(--background-color),
+                    var(--background-color)
+                );
 
         background-size:
             var(--l) var(--w),

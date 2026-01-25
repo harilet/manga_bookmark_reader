@@ -1,11 +1,11 @@
 <script lang="ts">
     import { open } from "@tauri-apps/plugin-shell";
     import dataStore from "./data_store";
-    import ContextMenu from "./contextMenu.svelte";
+    import Warning from "./icon/warning.svelte";
 
     export let propValue: any;
 
-    let borderClass = "";
+    let causion = false;
     let reTrigger = false;
 
     $: {
@@ -15,9 +15,9 @@
 
     async function setClasses() {
         if (await dataStore.get(getUrlWithoutChapter())) {
-            borderClass = "warning-class";
+            causion = true;
         } else {
-            borderClass = "normal-class";
+            causion = false;
         }
     }
 
@@ -53,19 +53,37 @@
 
 <button
     on:click={openUrl}
-    class="button-wrappper all-corner-lt-rb"
+    class="button-wrappper all-corner-lt-rb {propValue['error']
+        ? 'button-wrappper-error'
+        : ''}
+        {causion ? 'button-wrappper-causion' : ''}"
     data-augmented-ui="tr-clip bl-clip border"
 >
-    <div class="main-manga-area {borderClass} font-style">
-        <div data-augmented-ui="all-hex-alt border" class="section-1">
+    <div class="main-manga-area font-style">
+        <div
+            data-augmented-ui="all-hex-alt border"
+            class="section-1 {propValue['error'] ? 'index-error' : ''}
+            {causion ? 'index-causion' : ''}"
+        >
             {propValue["index"]}
         </div>
         <div class="section-2">
             <div class="name">
-                {propValue["name"]}
+                <div>
+                    {propValue["name"]}
+                </div>
+                {#if propValue["error"]}
+                    <div class="name-error">Error</div>
+                {/if}
+                {#if causion}
+                    <div class="name-causion">Causion</div>
+                {/if}
+            </div>
+            <div style="margin-bottom: 10px;">
+                {getMangaHost()}
             </div>
             <div>
-                {getMangaHost()}
+                {propValue["remaining_chapters"]}
             </div>
         </div>
 
@@ -77,16 +95,67 @@
                 {propValue["remaining_chapters"]}
             </div>
         </div>
+        <div class="section-4">
+            <button
+                data-augmented-ui="tr-clip bl-clip border"
+                class="btn"
+                on:click={setChapterWarning}
+            >
+                <Warning />
+            </button>
+        </div>
     </div>
 </button>
 
 <style>
+    .btn {
+        background: transparent;
+        border: none;
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
+        padding: 8px;
+    }
+
     .section-1 {
         --aug-all-width: 50px;
         --aug-border-all: 1px;
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    .index-error {
+        color: red;
+        background: #ff000022;
+    }
+
+    .name-error {
+        color: red;
+        background: #ff000022;
+        margin-left: 15px;
+        padding: 2px;
+        border: 1px solid #ff000055;
+    }
+
+    .button-wrappper-error {
+        --aug-border-bg: #ff000055 !important;
+    }
+
+    .index-causion {
+        color: yellow;
+        background: #ffff0022;
+    }
+
+    .name-causion {
+        color: yellow;
+        background: #ffff0022;
+        margin-left: 15px;
+        padding: 2px;
+        border: 1px solid #ffff0055;
+    }
+
+    .button-wrappper-causion {
+        --aug-border-bg: #ffff0055 !important;
     }
 
     .button-wrappper {
@@ -96,11 +165,10 @@
         --aug-border-all: 1px;
         --aug-border-bg: var(--accent);
         margin-bottom: 10px;
-        background: #0f172a66;
+        background: #0f172a99;
     }
 
     .button-wrappper:hover {
-        background-color: #1e293b99;
         --w: 3px; /* stroke width */
         --l: 26px; /* corner length */
 
@@ -112,7 +180,7 @@
             linear-gradient(var(--primary-color) 0 0),
             /* bottom-right vertical */
             linear-gradient(var(--primary-color) 0 0),
-            /* panel background */ linear-gradient(180deg, #0b1e2e, #081521);
+            /* panel background */ linear-gradient(180deg, #1e293b99, #1e293b99);
 
         background-size:
             var(--l) var(--w),
@@ -144,35 +212,6 @@
         align-items: center;
         justify-content: space-between;
         border-radius: 0px;
-    }
-
-    .wrapper-class {
-        padding: 2px;
-        flex: auto;
-    }
-
-    .warning-class {
-        color: var(--primary-color);
-        border: var(--border);
-        text-shadow:
-            2px 2px 0 var(--background-color),
-            2px -2px 0 var(--background-color),
-            -2px 2px 0 var(--background-color),
-            -2px -2px 0 var(--background-color),
-            2px 0px 0 var(--background-color),
-            0px 2px 0 var(--background-color),
-            -2px 0px 0 var(--background-color),
-            0px -2px 0 var(--background-color);
-        background: repeating-linear-gradient(
-            90deg,
-            var(--primary-color),
-            var(--primary-color) 1px,
-            var(--background-color) 1px,
-            var(--background-color) 3px
-        );
-    }
-
-    .normal-class {
         color: var(--primary-color);
         border: var(--border);
     }
@@ -198,6 +237,9 @@
         font-size: 105%;
         width: -webkit-fill-available;
         color: #cefafe;
+        display: flex;
+        align-items: center;
+        flex-direction: row;
     }
 
     .section-3 {
@@ -211,5 +253,10 @@
     .remaining-chapter-text {
         margin-bottom: 10px;
         color: var(--secondary-text);
+    }
+
+    .section-4 {
+        display: flex;
+        margin-left: 15px;
     }
 </style>

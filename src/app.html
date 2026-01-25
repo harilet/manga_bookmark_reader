@@ -25,7 +25,7 @@
         <style>
             :root {
                 --tw-text-opacity: 1;
-                --primary-color: #f97316;
+                --primary-color: #81a1c1;
                 --primary-disabled-color: color-mix(
                     in srgb,
                     var(--primary-color),
@@ -82,7 +82,11 @@
                     /* bottom-right */ linear-gradient(var(--primary-color) 0 0),
                     linear-gradient(var(--primary-color) 0 0),
                     /* panel background */
-                    linear-gradient(180deg, #0b1e2e, #081521);
+                    linear-gradient(
+                            180deg,
+                            var(--background-color),
+                            var(--background-color)
+                        );
 
                 background-size:
                     var(--l) var(--w),

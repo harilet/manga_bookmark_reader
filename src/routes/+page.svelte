@@ -40,7 +40,12 @@
     $: searchText = "";
     $: savedUrlListLength = 0;
 
+    let color = "#81a1c1";
+
     $: {
+        const root = document.documentElement;
+        root.style.setProperty(`--primary-color`, color);
+
         mangaFiltered = list.filter((x) => {
             if (x["error"]) {
                 return true;
@@ -175,7 +180,12 @@
     }
 </script>
 
-<dialog bind:this={shuffleListDialog} on:close class="main-scrollbar">
+<dialog
+    bind:this={shuffleListDialog}
+    on:close
+    class="main-scrollbar"
+    data-augmented-ui="tr-clip bl-clip border"
+>
     <div style="display: flex;flex-direction: column;height: 100%;">
         <div
             style="display: flex;flex-direction: row; justify-content: space-between;"
@@ -237,16 +247,23 @@
                 {savedUrlListLength}
             </div>
 
+            <div style="margin-left: 20px;">
+                <input
+                    type="color"
+                    id="favcolor"
+                    name="favcolor"
+                    bind:value={color}
+                />
+            </div>
+
             <button
-                data-augmented-ui="
-          bl-2-clip-x tl-clip
-        "
+                data-augmented-ui="tr-clip bl-clip border"
                 class="fetch-button font-style {disabled
                     ? 'fetch-button-disabled'
                     : 'fetch-button-enabled'}"
                 on:click={eventEmit}
             >
-                Fetch
+                {disabled ? "Fetching" : "Fetch"}
             </button>
         </div>
         <div class="main-scrollbar manga-list">
@@ -309,16 +326,54 @@
         border: none;
         height: 60px;
         margin-left: auto;
+
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
     }
 
     .fetch-button-enabled {
-        background: var(--primary-color);
+        background: var(--background-color);
         cursor: pointer;
+        color: var(--primary-color);
     }
 
     .fetch-button-disabled {
-        background: var(--primary-disabled-color);
+        color: var(--primary-color);
         cursor: wait;
+
+        --w: 3px; /* stroke width */
+        --l: 26px; /* corner length */
+
+        background-image:
+          /* top-left horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* top-left vertical */ linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right vertical */
+            linear-gradient(var(--primary-color) 0 0),
+            /* panel background */
+            linear-gradient(
+                    180deg,
+                    var(--background-color),
+                    var(--background-color)
+                );
+
+        background-size:
+            var(--l) var(--w),
+            var(--w) var(--l),
+            var(--l) var(--w),
+            var(--w) var(--l),
+            100% 100%;
+
+        background-position:
+            left top,
+            left top,
+            right bottom,
+            right bottom,
+            0 0;
+
+        background-repeat: no-repeat;
     }
 
     .btn {
@@ -357,7 +412,12 @@
             linear-gradient(var(--primary-color) 0 0),
             /* bottom-right vertical */
             linear-gradient(var(--primary-color) 0 0),
-            /* panel background */ linear-gradient(180deg, #0b1e2e, #081521);
+            /* panel background */
+            linear-gradient(
+                    180deg,
+                    var(--background-color),
+                    var(--background-color)
+                );
 
         background-size:
             var(--l) var(--w),
