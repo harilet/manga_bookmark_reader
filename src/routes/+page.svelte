@@ -40,12 +40,7 @@
     $: searchText = "";
     $: savedUrlListLength = 0;
 
-    let color = "#81a1c1";
-
     $: {
-        const root = document.documentElement;
-        root.style.setProperty(`--primary-color`, color);
-
         mangaFiltered = list.filter((x) => {
             if (x["error"]) {
                 return true;
@@ -245,15 +240,6 @@
             </button>
             <div class="label">
                 {savedUrlListLength}
-            </div>
-
-            <div style="margin-left: 20px;">
-                <input
-                    type="color"
-                    id="favcolor"
-                    name="favcolor"
-                    bind:value={color}
-                />
             </div>
 
             <button

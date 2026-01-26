@@ -13,8 +13,11 @@
     let progress_bar_class = "";
     let mangaInThreadDialog: HTMLDialogElement;
     $: mangaInThread = [""];
+    let color = "#81a1c1";
 
     $: {
+        const root = document.documentElement;
+        root.style.setProperty(`--primary-color`, color);
         if (value >= max) {
             progress_bar_class = "progress_done";
         } else {
@@ -105,23 +108,25 @@
                 on:change={onThreadCountChange}
                 style="text-align: center;"
             />
+            <div style="margin-left: 20px;">
+                <input
+                    type="color"
+                    id="favcolor"
+                    name="favcolor"
+                    bind:value={color}
+                />
+            </div>
         </div>
         <div class="main-scrollbar" style="overflow: auto;">
             {#key mangaInThread}
                 {#each mangaInThread as manga_item}
                     <div
-                        style="border: solid 1px var(--primary-color);width: 99%;"
+                        class="manga-in-thread"
+                        data-augmented-ui="tr-clip bl-clip border"
                     >
-                        <div class="manga-in-thread-wrapper">
-                            <div
-                                data-augmented-ui="r-rect l-rect"
-                                class="manga-in-thread"
-                            >
-                                {#if manga_item !== ""}
-                                    {manga_item}
-                                {/if}
-                            </div>
-                        </div>
+                        {#if manga_item !== ""}
+                            {manga_item}
+                        {/if}
                     </div>
                 {/each}
             {/key}
@@ -130,16 +135,8 @@
 </dialog>
 
 <div class="progress-area-wrapper">
-    <div
-        data-augmented-ui="bl-clip t-clip-x br-clip border"
-        class="progress-area"
-    >
-        <progress
-            data-augmented-ui="bl-clip t-clip-x br-clip"
-            class="progress {progress_bar_class}"
-            {value}
-            {max}
-        >
+    <div class="progress-area all-corner-stroke">
+        <progress class="progress {progress_bar_class}" {value} {max}>
         </progress>
     </div>
 </div>
@@ -154,9 +151,11 @@
                     class="thread-box"
                     style="--fill: {currentThreadCount <= i
                         ? 'transparent'
-                        : 'var(--primary-color)'};"
+                        : 'var(--accent)'};"
                 >
-                    <span></span>
+                    <span>
+                        {i + 1}
+                    </span>
                 </div>
             {/each}
         {/key}
@@ -173,9 +172,12 @@
         transition: opacity 0.3s ease;
         background-color: var(--fill);
         border: var(--border);
-        width: 10px;
-        height: 10px;
+        width: 20px;
+        height: 20px;
         margin: 0px 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .progress-area-wrapper {
@@ -184,10 +186,9 @@
 
     .progress-area {
         display: flex;
-        padding: 4px 2px;
+        padding: 5px;
         justify-content: space-evenly;
-        --aug-border-all: 1px;
-        --aug-border-bg: var(--primary-color);
+        border: solid 1px var(--primary-color);
     }
 
     .progress-test {
@@ -201,7 +202,7 @@
     .progress {
         width: 100%;
         border-radius: 0px;
-        height: 20px;
+        height: 10px;
     }
 
     .in_progress::-webkit-progress-value {
@@ -291,15 +292,47 @@
         outline: none !important;
     }
 
-    .manga-in-thread-wrapper {
-        background: var(--primary-color);
-        border: var(--border);
-    }
-
     .manga-in-thread {
-        background: var(--background-color);
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
+
+        border: var(--border);
+        margin: 5px;
         padding: 20px;
         color: var(--primary-color);
+        --w: 3px; /* stroke width */
+        --l: 26px; /* corner length */
+
+        background-image:
+          /* top-left horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* top-left vertical */ linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right vertical */
+            linear-gradient(var(--primary-color) 0 0),
+            /* panel background */
+            linear-gradient(
+                    180deg,
+                    var(--background-color),
+                    var(--background-color)
+                );
+
+        background-size:
+            var(--l) var(--w),
+            var(--w) var(--l),
+            var(--l) var(--w),
+            var(--w) var(--l),
+            100% 100%;
+
+        background-position:
+            left top,
+            left top,
+            right bottom,
+            right bottom,
+            0 0;
+
+        background-repeat: no-repeat;
     }
 
     .settings-header {
