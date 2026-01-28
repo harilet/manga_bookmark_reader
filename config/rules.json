@@ -35,7 +35,7 @@
     "type": "toggle"
   },
   {
-    "site_match": ["hto.to","xbato.com"],
+    "site_match": ["hto.to", "xbato.com"],
     "page_check": "Prev Chapter",
     "main_check": "Next Chapter",
     "type": "toggle"
@@ -45,10 +45,10 @@
     "type": "static",
     "value": "1"
   },
-    {
+  {
     "site_match": ["mangaread"],
     "page_check": "PREV",
     "main_check": "next_page",
-    "type": "toggle"
+    "type": "auto"
   }
 ]

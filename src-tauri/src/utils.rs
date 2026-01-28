@@ -12,6 +12,12 @@ pub(crate) struct BookmarkData {
     pub(crate) index: usize,
 }
 
+#[derive(Clone, Debug)]
+pub(crate) struct RemainingChapters {
+    pub(crate) total: usize,
+    pub(crate) remaining: usize,
+}
+
 pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
     let mut result_data: Vec<BookmarkData> = vec![];
     let contents =
@@ -90,19 +96,24 @@ pub(crate) async fn get_html(url: &str) -> String {
     }
 }
 
-pub(crate) fn get_remaining_chapters(response: String, site: String) -> String {
+pub(crate) fn get_remaining_chapters(response: String, site: String) -> RemainingChapters {
     if site == "natomanga/manganato".to_owned() {
         return natomanga_manganato_remaining_chapters(response);
     } else if site == "manhwaclan".to_owned() {
         return manhwaclan_remaining_chapters(response);
     } else if site == "asuracomic".to_owned() {
         return asuracomic_remaining_chapters(response);
+    } else if site == "mangaread".to_owned() {
+        return mangaread_remaining_chapters(response);
     } else {
-        return '0'.to_string();
+        return RemainingChapters {
+            total: 0,
+            remaining: 0,
+        };
     }
 }
 
-fn manhwaclan_remaining_chapters(response: String) -> String {
+fn manhwaclan_remaining_chapters(response: String) -> RemainingChapters {
     let start_pos = response
         .find("<select class=\"selectpicker single-chapter-select\" >")
         .unwrap()
@@ -125,10 +136,13 @@ fn manhwaclan_remaining_chapters(response: String) -> String {
         }
     }
 
-    return selected_index.to_string();
+    return RemainingChapters {
+        total: 0,
+        remaining: selected_index,
+    };
 }
 
-fn natomanga_manganato_remaining_chapters(response: String) -> String {
+fn natomanga_manganato_remaining_chapters(response: String) -> RemainingChapters {
     let start_pos = response
         .find("<select class=\"navi-change-chapter\">")
         .unwrap_or(0)
@@ -151,10 +165,13 @@ fn natomanga_manganato_remaining_chapters(response: String) -> String {
         }
     }
 
-    return selected_index.to_string();
+    return RemainingChapters {
+        total: 0,
+        remaining: selected_index,
+    };
 }
 
-fn asuracomic_remaining_chapters(response: String) -> String {
+fn asuracomic_remaining_chapters(response: String) -> RemainingChapters {
     let start_pos = response.find("selectedChapter").unwrap_or(0) - 3;
     let response_2 = &response[start_pos..];
 
@@ -183,5 +200,34 @@ fn asuracomic_remaining_chapters(response: String) -> String {
         .position(|r| r.get("label").unwrap() == current_chapter)
         .unwrap();
 
-    return index.to_string();
+    return RemainingChapters {
+        total: chapter_list.len(),
+        remaining: index,
+    };
+}
+
+fn mangaread_remaining_chapters(response: String) -> RemainingChapters {
+    let start_pos = response.find("<select class=").unwrap_or(0) + 53;
+
+    let response_2 = &response[start_pos..];
+    let end_bytes = response_2.find("</select>").unwrap();
+
+    let response_3 = &response_2[..end_bytes];
+
+    let dom = Dom::parse(response_3).unwrap();
+
+    let mut selected_index = 0;
+
+    for (i, option) in dom.children.iter().enumerate() {
+        let ele = option.element().unwrap();
+
+        if ele.attributes.contains_key("selected") {
+            selected_index = i;
+        }
+    }
+
+    return RemainingChapters {
+        total: dom.children.len(),
+        remaining: selected_index,
+    };
 }

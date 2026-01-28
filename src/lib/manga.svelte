@@ -83,7 +83,20 @@
                 {getMangaHost()}
             </div>
             <div>
-                {propValue["remaining_chapters"]}
+                <progress
+                    class="manga_progress"
+                    max={propValue["total_chapters"]}
+                    value={propValue["total_chapters"] -
+                        propValue["remaining_chapters"]}
+                />
+                {#if propValue["total_chapters"] > 0}
+                    {Math.round(
+                        ((propValue["total_chapters"] -
+                            propValue["remaining_chapters"]) /
+                            propValue["total_chapters"]) *
+                            100,
+                    )}%
+                {/if}
             </div>
         </div>
 
@@ -258,5 +271,19 @@
     .section-4 {
         display: flex;
         margin-left: 15px;
+    }
+
+    .manga_progress {
+        width: 100%;
+        height: 5px;
+        background-color: transparent;
+        border: solid 1px var(--primary-color);
+    }
+
+    .manga_progress::-webkit-progress-value {
+        background: var(--done-color);
+    }
+    .manga_progress[value]::-webkit-progress-bar {
+        background-color: transparent;
     }
 </style>

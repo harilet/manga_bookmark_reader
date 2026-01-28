@@ -22,6 +22,7 @@ struct Payload {
     name: String,
     date_time: String,
     remaining_chapters: String,
+    total_chapters: String,
     url: String,
     error: bool,
 }
@@ -160,6 +161,7 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
         name: manga_data.name.clone(),
         date_time: dt.to_string(),
         remaining_chapters: 0.to_string(),
+        total_chapters: 1.to_string(),
         url: manga_data.url.clone(),
         error: true,
     };
@@ -190,8 +192,10 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
             "auto" => match rule.main_check {
                 Some(main_rule) => {
                     if response.contains(&main_rule) {
-                        payload.remaining_chapters =
+                        let remaining_chapters =
                             get_remaining_chapters(response.clone(), rule.site_match.join("/"));
+                        payload.remaining_chapters = remaining_chapters.remaining.to_string();
+                        payload.total_chapters = remaining_chapters.total.to_string();
                     }
                     payload.error = false;
                 }
@@ -202,8 +206,10 @@ async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
             "inverse_auto" => match rule.main_check {
                 Some(main_rule) => {
                     if !response.contains(&main_rule) {
-                        payload.remaining_chapters =
+                        let remaining_chapters =
                             get_remaining_chapters(response.clone(), rule.site_match.join("/"));
+                        payload.remaining_chapters = remaining_chapters.remaining.to_string();
+                        payload.total_chapters = remaining_chapters.total.to_string();
                     }
                     payload.error = false;
                 }
