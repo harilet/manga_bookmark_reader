@@ -13,6 +13,8 @@
     import dataStore from "$lib/data_store";
     import Refresh from "$lib/icon/refresh.svelte";
     import DeleteHistory from "$lib/icon/delete_history.svelte";
+    import Lists from "$lib/icon/lists.svelte";
+    import GridOn from "$lib/icon/grid_on.svelte";
 
     let showAllMangas = false;
 
@@ -30,6 +32,7 @@
     let mangaFinal: any[];
     let mangaSample: any[] = [];
     let shuffleListDialog: HTMLDialogElement;
+    let mangaListMode = "List";
 
     $: shuffleSample = false;
     $: sampleCount = 5;
@@ -173,6 +176,10 @@
     function clearRandomHistory() {
         dataStore.delete("savedUrlList");
     }
+
+    function mangaListModeToggle() {
+        mangaListMode = mangaListMode === "List" ? "Grid" : "List";
+    }
 </script>
 
 <dialog
@@ -202,7 +209,7 @@
         <div class=" manga-list">
             {#key mangaSample}
                 {#each mangaSample as manga_item}
-                    <Manga propValue={manga_item}></Manga>
+                    <Manga propValue={manga_item} {mangaListMode}></Manga>
                 {/each}
             {/key}
         </div>
@@ -223,7 +230,7 @@
     </div>
 
     <div class="main-area">
-        <div class="side-bar">
+        <div data-augmented-ui="tr-clip bl-clip border" class="side-bar">
             <div style="width: 150px; margin-left: 20px;">
                 <Dropdown bind:sort />
             </div>
@@ -244,6 +251,18 @@
 
             <button
                 data-augmented-ui="tr-clip bl-clip border"
+                class="btn-mode-toggle"
+                on:click={mangaListModeToggle}
+            >
+                {#if mangaListMode == "List"}
+                    <Lists />
+                {:else}
+                    <GridOn />
+                {/if}
+            </button>
+
+            <button
+                data-augmented-ui="tr-clip bl-clip border"
                 class="fetch-button font-style {disabled
                     ? 'fetch-button-disabled'
                     : 'fetch-button-enabled'}"
@@ -252,11 +271,15 @@
                 {disabled ? "Fetching" : "Fetch"}
             </button>
         </div>
-        <div class="main-scrollbar manga-list">
+        <div
+            class="main-scrollbar {mangaListMode == 'List'
+                ? 'manga-list'
+                : 'manga-grid'}"
+        >
             {#key showAllMangas}
                 {#key sort}
                     {#each mangaFinal as manga}
-                        <Manga propValue={manga}></Manga>
+                        <Manga propValue={manga} {mangaListMode}></Manga>
                     {/each}
                 {/key}
             {/key}
@@ -265,6 +288,53 @@
 </div>
 
 <style>
+    .btn-mode-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        border: var(--border);
+        padding: 5px 15px;
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
+        margin-left: 10px;
+        border: none;
+
+        --w: 2px; /* stroke width */
+        --l: 24px; /* corner length */
+
+        background-image:
+          /* top-left horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* top-left vertical */ linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right horizontal */
+            linear-gradient(var(--primary-color) 0 0),
+            /* bottom-right vertical */
+            linear-gradient(var(--primary-color) 0 0),
+            /* panel background */
+            linear-gradient(
+                    180deg,
+                    var(--background-color),
+                    var(--background-color)
+                );
+
+        background-size:
+            var(--l) var(--w),
+            var(--w) var(--l),
+            var(--l) var(--w),
+            var(--w) var(--l),
+            100% 100%;
+
+        background-position:
+            left top,
+            left top,
+            right bottom,
+            right bottom,
+            0 0;
+
+        background-repeat: no-repeat;
+    }
+
     .top-progress-bar-area {
         background-color: color-mix(
             in oklab,
@@ -295,13 +365,23 @@
         align-items: center;
         flex-direction: row;
         position: relative;
-        border-top: var(--border);
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
     }
 
     .manga-list {
         overflow: auto;
         display: flex;
         flex-direction: column;
+        align-content: baseline;
+        padding: 10px;
+    }
+
+    .manga-grid {
+        overflow: auto;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
         align-content: baseline;
         padding: 10px;
     }

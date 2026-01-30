@@ -4,6 +4,7 @@
     import Warning from "./icon/warning.svelte";
 
     export let propValue: any;
+    export let mangaListMode: string;
 
     let causion = false;
     let reTrigger = false;
@@ -51,40 +52,132 @@
     }
 </script>
 
-<button
-    on:click={openUrl}
-    class="button-wrappper all-corner-lt-rb {propValue['error']
-        ? 'button-wrappper-error'
-        : ''}
+{#if mangaListMode == "List"}
+    <button
+        on:click={openUrl}
+        class="button-wrappper all-corner-lt-rb {propValue['error']
+            ? 'button-wrappper-error'
+            : ''}
         {causion ? 'button-wrappper-causion' : ''}"
-    data-augmented-ui="tr-clip bl-clip border"
->
-    <div class="main-manga-area font-style">
-        <div
-            data-augmented-ui="all-hex-alt border"
-            class="section-1 {propValue['error'] ? 'index-error' : ''}
+        data-augmented-ui="tr-clip bl-clip border"
+    >
+        <div class="main-manga-area font-style">
+            <div
+                data-augmented-ui="all-hex-alt border"
+                class="section-1 {propValue['error'] ? 'index-error' : ''}
             {causion ? 'index-causion' : ''}"
-        >
-            {propValue["index"]}
+            >
+                {propValue["index"]}
+            </div>
+            <div class="section-2">
+                <div class="name">
+                    <div>
+                        {propValue["name"]}
+                    </div>
+                    {#if propValue["error"]}
+                        <div class="name-error">Error</div>
+                    {/if}
+                    {#if causion}
+                        <div class="name-causion">Causion</div>
+                    {/if}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    {getMangaHost()}
+                </div>
+                <div>
+                    <progress
+                        class="manga_progress"
+                        max={propValue["total_chapters"]}
+                        value={propValue["total_chapters"] -
+                            propValue["remaining_chapters"]}
+                    />
+                    {#if propValue["total_chapters"] > 0}
+                        {Math.round(
+                            ((propValue["total_chapters"] -
+                                propValue["remaining_chapters"]) /
+                                propValue["total_chapters"]) *
+                                100,
+                        )}%
+                    {/if}
+                </div>
+            </div>
+
+            <div class="section-3">
+                <div class="date-time">
+                    {propValue["date_time"]}
+                </div>
+                <div class="remaining-chapter-text">
+                    {propValue["remaining_chapters"]}
+                </div>
+            </div>
+            <div class="section-4">
+                <button
+                    data-augmented-ui="tr-clip bl-clip border"
+                    class="btn"
+                    on:click={setChapterWarning}
+                >
+                    <Warning />
+                </button>
+            </div>
         </div>
-        <div class="section-2">
-            <div class="name">
+    </button>
+{:else if mangaListMode == "Grid"}
+    <button
+        on:click={openUrl}
+        class="grid button-wrappper all-corner-lt-rb {propValue['error']
+            ? 'button-wrappper-error'
+            : ''}
+    {causion ? 'button-wrappper-causion' : ''}"
+        data-augmented-ui="tr-clip bl-clip border"
+    >
+        <div style="width: 100%;">
+            <div class="name" style="justify-content: space-between;">
                 <div>
                     {propValue["name"]}
+                    {#if propValue["error"]}
+                        <div
+                            class="name-error"
+                            style="margin-left: 0px;margin-top: 10px;"
+                        >
+                            Error
+                        </div>
+                    {/if}
+                    {#if causion}
+                        <div
+                            class="name-causion"
+                            style="margin-left: 0px;margin-top: 10px;"
+                        >
+                            Causion
+                        </div>
+                    {/if}
                 </div>
-                {#if propValue["error"]}
-                    <div class="name-error">Error</div>
-                {/if}
-                {#if causion}
-                    <div class="name-causion">Causion</div>
-                {/if}
+                <div
+                    style="min-width: 50px;"
+                    data-augmented-ui="all-hex-alt border"
+                    class="section-1 {propValue['error'] ? 'index-error' : ''}
+                {causion ? 'index-causion' : ''}"
+                >
+                    {propValue["index"]}
+                </div>
             </div>
-            <div style="margin-bottom: 10px;">
-                {getMangaHost()}
+        </div>
+        <div>
+            <div
+                style="margin-bottom: 10px;text-align: initial; display: flex; flex-direction: row; align-items: center; justify-content: space-between;"
+            >
+                <div>
+                    {getMangaHost()}
+                </div>
+                <div>
+                    {propValue["remaining_chapters"]}
+                </div>
             </div>
-            <div>
+            <div
+                style="display: flex; flex-direction: row;align-items: center;"
+            >
                 <progress
                     class="manga_progress"
+                    style="margin-right: 5px;"
                     max={propValue["total_chapters"]}
                     value={propValue["total_chapters"] -
                         propValue["remaining_chapters"]}
@@ -98,29 +191,25 @@
                     )}%
                 {/if}
             </div>
-        </div>
-
-        <div class="section-3">
-            <div class="date-time">
+            <div style="text-align: initial;">
                 {propValue["date_time"]}
             </div>
-            <div class="remaining-chapter-text">
-                {propValue["remaining_chapters"]}
-            </div>
         </div>
-        <div class="section-4">
-            <button
-                data-augmented-ui="tr-clip bl-clip border"
-                class="btn"
-                on:click={setChapterWarning}
-            >
-                <Warning />
-            </button>
-        </div>
-    </div>
-</button>
+    </button>
+{/if}
 
 <style>
+    .grid {
+        display: flex;
+        height: 225px;
+        width: 300px;
+        flex-direction: row;
+        padding: 15px !important;
+        margin: 10px !important;
+        flex-direction: column;
+        justify-content: space-between;
+        color: var(--primary-color);
+    }
     .btn {
         background: transparent;
         border: none;
@@ -253,6 +342,7 @@
         display: flex;
         align-items: center;
         flex-direction: row;
+        text-align: initial;
     }
 
     .section-3 {
