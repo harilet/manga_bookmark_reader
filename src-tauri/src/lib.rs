@@ -5,7 +5,6 @@ use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
-use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 use tauri::async_runtime::block_on;
@@ -47,7 +46,12 @@ struct Rule {
     value: Option<String>,
 }
 
-type CompleteQueue = deadqueue::limited::Queue<usize>;
+#[derive(Debug, Deserialize, Clone, serde::Serialize)]
+struct ThreadData {
+    url: String,
+    thread_num: usize,
+    added: bool,
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -87,11 +91,6 @@ async fn get_manga(app_handle: AppHandle) {
     let worker_count = state.lock().unwrap().thread;
 
     let data = read_bookmark();
-    let mut index = 0;
-
-    let task_count = data.len();
-
-    let complete_queue = Arc::new(CompleteQueue::new(task_count));
 
     app_handle
         .emit("scan_data", PayloadMangaSize { size: data.len() })
@@ -103,49 +102,38 @@ async fn get_manga(app_handle: AppHandle) {
     let json_data = fs::read_to_string(rules_file).unwrap();
     let rules: Vec<Rule> = serde_json::from_str(&json_data).unwrap();
 
-    let mut prev_thread_count = 0;
-    loop {
-        if prev_thread_count != complete_queue.len() {
-            prev_thread_count = complete_queue.len();
-            app_handle
-                .emit("threads", format!("{}", prev_thread_count))
-                .unwrap();
-        }
-        while complete_queue.len() < worker_count && index < task_count {
-            let manga_data = data[index].clone();
+    let mut thread_data: Vec<Vec<BookmarkData>> = vec![Vec::new(); worker_count];
+    for (index, manga_data) in data.clone().into_iter().enumerate() {
+        thread_data[index % worker_count].push(manga_data.clone());
+    }
 
-            complete_queue.try_push(manga_data.index).unwrap();
-            app_handle
-                .emit("thread_update", format!("+{}", manga_data.url.clone()))
-                .unwrap();
-            index += 1;
-            app_handle
-                .emit("threads", format!("{}", prev_thread_count))
-                .unwrap();
+    for (index, thread) in thread_data.clone().into_iter().enumerate() {
+        let app_handle_2 = app_handle.app_handle().to_owned();
+        let temp_rules = rules.clone();
+        thread::Builder::new()
+            .spawn(move || {
+                block_on(async {
+                    for manga_data in thread {
+                        let thread_data = ThreadData {
+                            url: manga_data.url.clone(),
+                            thread_num: index,
+                            added: true,
+                        };
+                        app_handle_2.emit("thread_update", thread_data).unwrap();
 
-            let temp_rules = rules.clone();
-
-            let _complete_queue = complete_queue.clone();
-            let app_handle_2 = app_handle.app_handle().to_owned();
-            thread::Builder::new()
-                .spawn(move || {
-                    block_on(async {
-                        let payload = bookmark_check(manga_data.clone(), temp_rules).await;
+                        let payload = bookmark_check(manga_data.clone(), temp_rules.clone()).await;
+                        let thread_data = ThreadData {
+                            url: manga_data.url.clone(),
+                            thread_num: index,
+                            added: false,
+                        };
+                        app_handle_2.emit("thread_update", thread_data).unwrap();
 
                         app_handle_2.emit("scan_data", payload).unwrap();
-                        _complete_queue.pop().await;
-                        app_handle_2
-                            .emit("thread_update", format!("-{}", manga_data.url.clone()))
-                            .unwrap();
-                    })
+                    }
                 })
-                .unwrap();
-        }
-
-        if index == task_count && complete_queue.len() == 0 {
-            app_handle.emit("threads", format!("{}", 0)).unwrap();
-            break;
-        }
+            })
+            .unwrap();
     }
 
     app_handle.emit("scan_data", "done").unwrap();

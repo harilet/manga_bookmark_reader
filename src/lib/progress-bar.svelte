@@ -12,7 +12,7 @@
     $: currentThreadCount = 0;
     let progress_bar_class = "";
     let mangaInThreadDialog: HTMLDialogElement;
-    $: mangaInThread = [""];
+    $: mangaInThread = [{}];
     let color = "#81a1c1";
 
     $: {
@@ -26,9 +26,8 @@
     }
 
     onMount(async () => {
-        mangaInThread = mangaInThread.filter((x) => x !== "");
+        mangaInThread = mangaInThread.filter((x: any) => x !== "");
         let tempThreadCount = await dataStore.get("thread_count");
-        console.log("tempThreadCount", tempThreadCount);
         if (typeof tempThreadCount === "string") {
             threadCount = Number.parseInt(tempThreadCount);
             changeThreadCount();
@@ -50,12 +49,15 @@
         });
 
         await listen("thread_update", (event: { payload: any }) => {
-            let data = String(event.payload);
-            if (data[0] == "+") {
-                mangaInThread = [...mangaInThread, data.substring(1)];
+            let data = event.payload;
+            if (data["added"] == true) {
+                mangaInThread = [
+                    ...mangaInThread,
+                    { url: data["url"], thread: data["thread_num"] },
+                ];
             } else {
                 let temp = mangaInThread.filter(function (x) {
-                    return x != data.substring(1);
+                    return x["url"] != data["url"];
                 });
                 mangaInThread = [];
                 mangaInThread = [...temp];
@@ -92,6 +94,13 @@
             mangaInThreadDialog.close();
         }
     }
+
+    function isThreadActive(threadNumber: number): boolean {
+        let isTActive = mangaInThread.some(
+            (item: any) => item.thread === threadNumber,
+        );
+        return isTActive;
+    }
 </script>
 
 <dialog
@@ -124,8 +133,15 @@
                         class="manga-in-thread"
                         data-augmented-ui="tr-clip bl-clip border"
                     >
+                        <div
+                            data-augmented-ui="all-hex-alt border"
+                            style="--aug-border-all: 1px;
+                        --aug-border-bg: var(--accent); margin-right: 10px; min-width: 30px;"
+                        >
+                            {manga_item["thread"]}
+                        </div>
                         {#if manga_item !== ""}
-                            {manga_item}
+                            {manga_item["url"]}
                         {/if}
                     </div>
                 {/each}
@@ -145,13 +161,13 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div style="display: flex;cursor: pointer;" on:click={showThreadCountInput}>
-        {#key threadCount}
+        {#key mangaInThread}
             {#each [...Array(threadCount).keys()] as i (i)}
                 <div
                     class="thread-box"
-                    style="--fill: {currentThreadCount <= i
-                        ? 'transparent'
-                        : 'var(--accent)'};"
+                    style="--fill: {isThreadActive(i)
+                        ? 'var(--accent)'
+                        : 'transparent'};"
                 >
                     <span>
                         {i + 1}
@@ -295,6 +311,8 @@
     .manga-in-thread {
         --aug-border-all: 1px;
         --aug-border-bg: var(--accent);
+        display: flex;
+        align-items: center;
 
         border: var(--border);
         margin: 5px;

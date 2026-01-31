@@ -79,6 +79,10 @@ pub(crate) fn convert_date(j: String) -> DelayedFormat<StrftimeItems<'static>> {
 }
 
 pub(crate) async fn get_html(url: &str) -> String {
+    // let mut rng = rand::random_range(2..4);
+    // tokio::time::sleep(tokio::time::Duration::from_secs(rng)).await;
+
+    // return "".to_string();
     match reqwest::get(url).await {
         Ok(response) => match response.text().await {
             Ok(html_text) => {
