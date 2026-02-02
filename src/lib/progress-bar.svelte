@@ -4,15 +4,20 @@
     import { listen } from "@tauri-apps/api/event";
     import dataStore from "./data_store";
 
+    type ThreadObj = {
+      url: string;
+      thread: number;
+      added: boolean;
+    };
+
     export let value = 0;
     export let max = 0;
     export let listCount = 0;
 
     $: threadCount = 0;
-    $: currentThreadCount = 0;
     let progress_bar_class = "";
     let mangaInThreadDialog: HTMLDialogElement;
-    $: mangaInThread = [{}];
+    let mangaInThread: ThreadObj[]=[];
     let color = "#81a1c1";
 
     $: {
@@ -53,7 +58,7 @@
             if (data["added"] == true) {
                 mangaInThread = [
                     ...mangaInThread,
-                    { url: data["url"], thread: data["thread_num"] },
+                    { url: data["url"], thread: data["thread_num"], added: true },
                 ];
             } else {
                 let temp = mangaInThread.filter(function (x) {
@@ -62,11 +67,6 @@
                 mangaInThread = [];
                 mangaInThread = [...temp];
             }
-        });
-
-        await listen("threads", (event) => {
-            let data: string[] = String(event.payload).split("/");
-            currentThreadCount = parseInt(data[0]);
         });
     });
 
@@ -140,9 +140,7 @@
                         >
                             {manga_item["thread"]}
                         </div>
-                        {#if manga_item !== ""}
                             {manga_item["url"]}
-                        {/if}
                     </div>
                 {/each}
             {/key}

@@ -42,6 +42,7 @@
     $: finalLength = mangaFinal.length;
     $: searchText = "";
     $: savedUrlListLength = 0;
+    let showDraw = false;
 
     $: {
         mangaFiltered = list.filter((x) => {
@@ -180,6 +181,10 @@
     function mangaListModeToggle() {
         mangaListMode = mangaListMode === "List" ? "Grid" : "List";
     }
+
+    function toggleDrawer() {
+        showDraw = !showDraw;
+    }
 </script>
 
 <dialog
@@ -216,6 +221,62 @@
     </div>
 </dialog>
 
+<div
+    style={showDraw ? "left: 0" : ""}
+    class="drawer"
+    data-augmented-ui="tr-clip br-clip border"
+>
+    <button data-augmented-ui="tr-clip bl-clip border"
+    class="btn-mode-toggle"
+    on:click={toggleDrawer}>
+        close
+    </button>
+    <div style="width: -webkit-fill-available; margin-left: 20px;">
+        <Dropdown bind:sort />
+    </div>
+    <div style="width: -webkit-fill-available;margin-left: 20px;">
+        <Toggle bind:toggled={showAllMangas} />
+    </div>
+
+    <div>
+        <Search bind:searchText />
+    </div>
+
+    <div style="display: flex;
+    align-items: center;">
+        <button class="btn" on:click={openRandom}>
+            <Random />
+        </button>
+        <div class="label">
+            {savedUrlListLength}
+        </div>
+    </div>
+
+    <button
+        data-augmented-ui="tr-clip bl-clip border"
+        class="btn-mode-toggle"
+        on:click={mangaListModeToggle}
+    >
+        {#if mangaListMode == "List"}
+            <Lists />
+        {:else}
+            <GridOn />
+        {/if}
+    </button>
+    <div>
+
+    </div>
+    <div>
+
+    </div>
+    <div>
+
+    </div>
+    <div>
+
+    </div>
+</div>
+
 <div data-tauri-drag-region class="app-bar">
     <Titlebar />
 </div>
@@ -230,35 +291,14 @@
     </div>
 
     <div class="main-area">
-        <div data-augmented-ui="tr-clip bl-clip border" class="side-bar">
-            <div style="width: 150px; margin-left: 20px;">
-                <Dropdown bind:sort />
-            </div>
-            <div style="width: 150px;margin-left: 20px;">
-                <Toggle bind:toggled={showAllMangas} />
-            </div>
-
-            <div>
-                <Search bind:searchText />
-            </div>
-
-            <button class="btn" on:click={openRandom}>
-                <Random />
-            </button>
-            <div class="label">
-                {savedUrlListLength}
-            </div>
-
+        <div class="side-bar">
             <button
                 data-augmented-ui="tr-clip bl-clip border"
-                class="btn-mode-toggle"
-                on:click={mangaListModeToggle}
+                class="btn-mode-toggle" style="width: 200px;
+                height: 60px;"
+                on:click={toggleDrawer}
             >
-                {#if mangaListMode == "List"}
-                    <Lists />
-                {:else}
-                    <GridOn />
-                {/if}
+                Drawer
             </button>
 
             <button
@@ -288,6 +328,24 @@
 </div>
 
 <style>
+    .drawer {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 0;
+        left: -30%;
+        height: calc(100% - 20px);
+        width: 20%;
+        z-index: 5;
+        padding: 10px;
+        background-color: var(--background-color);
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
+        justify-content: space-between;
+
+        transition: all 0.3s ease-in-out;
+    }
+
     .btn-mode-toggle {
         display: flex;
         align-items: center;
@@ -365,8 +423,7 @@
         align-items: center;
         flex-direction: row;
         position: relative;
-        --aug-border-all: 1px;
-        --aug-border-bg: var(--accent);
+        border-bottom: solid 1px var(--accent);
     }
 
     .manga-list {
