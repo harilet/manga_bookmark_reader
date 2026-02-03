@@ -14,7 +14,6 @@
         height: 30px;
         margin: 0px;
         padding: 1px 5px;
-        margin-left: 20px;
         display: flex;
         align-items: center;
         justify-items: center;

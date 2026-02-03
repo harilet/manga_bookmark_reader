@@ -17,41 +17,42 @@
     import GridOn from "$lib/icon/grid_on.svelte";
 
     let showAllMangas = false;
-
     let totalSize = 0;
-
     var list: any[] = [];
-
     let disabled = false;
-
     let sort = "Default";
-
     let mangaFiltered: any[];
-
     let mangaSortedAndFiltered: any[];
     let mangaFinal: any[];
     let mangaSample: any[] = [];
     let shuffleListDialog: HTMLDialogElement;
+    let filterDialog: HTMLDialogElement;
     let mangaListMode = "List";
+    let showDraw = false;
+    let ignoreHosts: string[] = [];
 
     $: shuffleSample = false;
     $: sampleCount = 5;
-
     $: listLength = list.length;
-
     $: finalLength = mangaFinal.length;
     $: searchText = "";
     $: savedUrlListLength = 0;
-    let showDraw = false;
 
     $: {
         mangaFiltered = list.filter((x) => {
+            for (let host of ignoreHosts) {
+                if (x["url"].includes(host)) {
+                    return false;
+                }
+            }
+
             if (x["error"]) {
                 return true;
             }
             if (showAllMangas) {
                 return true;
             }
+
             return x["remaining_chapters"] > 0;
         });
 
@@ -108,6 +109,18 @@
                 event.clientX <= rect.left + rect.width;
             if (!isInDialog) {
                 shuffleListDialog.close();
+            }
+        });
+
+        filterDialog.addEventListener("click", function (event) {
+            var rect = filterDialog.getBoundingClientRect();
+            var isInDialog =
+                rect.top <= event.clientY &&
+                event.clientY <= rect.top + rect.height &&
+                rect.left <= event.clientX &&
+                event.clientX <= rect.left + rect.width;
+            if (!isInDialog) {
+                filterDialog.close();
             }
         });
     });
@@ -185,6 +198,29 @@
     function toggleDrawer() {
         showDraw = !showDraw;
     }
+
+    function openFilter() {
+        filterDialog.showModal();
+    }
+
+    function getUniqueHosts(): string[] {
+        const hosts = new Set<string>();
+        list.forEach((manga) => {
+            try {
+                const url = new URL(manga.url);
+                hosts.add(url.hostname);
+            } catch (e) {
+                console.error("Invalid URL:", manga.url);
+            }
+        });
+        return Array.from(hosts);
+    }
+
+    function toggleIgnoreHost(host: string) {
+        ignoreHosts = ignoreHosts.includes(host)
+            ? ignoreHosts.filter((h) => h !== host)
+            : [...ignoreHosts, host];
+    }
 </script>
 
 <dialog
@@ -221,20 +257,56 @@
     </div>
 </dialog>
 
+<dialog
+    bind:this={filterDialog}
+    on:close
+    class="main-scrollbar"
+    data-augmented-ui="tr-clip bl-clip border"
+>
+    <div
+        style="display: flex;flex-direction: column;height: 100%;color: var(--primary-color);align-items: center;"
+    >
+        <div>
+            {#key mangaFinal}
+                {#each getUniqueHosts() as host}
+                    <div
+                        style="display: flex; flex-direction: row;align-items: center;margin-bottom: 10px;"
+                    >
+                        <button
+                            data-augmented-ui="tr-clip bl-clip border"
+                            style="background-color: var({ignoreHosts.includes(
+                                host,
+                            )
+                                ? '--background-color'
+                                : '--accent'});"
+                            class="toggle-btn"
+                            on:click={() => toggleIgnoreHost(host)}
+                        >
+                            {host}
+                        </button>
+                    </div>
+                {/each}
+            {/key}
+        </div>
+    </div>
+</dialog>
+
 <div
     style={showDraw ? "left: 0" : ""}
     class="drawer"
     data-augmented-ui="tr-clip br-clip border"
 >
-    <button data-augmented-ui="tr-clip bl-clip border"
-    class="btn-mode-toggle"
-    on:click={toggleDrawer}>
+    <button
+        data-augmented-ui="tr-clip bl-clip border"
+        class="btn-mode-toggle"
+        on:click={toggleDrawer}
+    >
         close
     </button>
-    <div style="width: -webkit-fill-available; margin-left: 20px;">
+    <div style="width: -webkit-fill-available;">
         <Dropdown bind:sort />
     </div>
-    <div style="width: -webkit-fill-available;margin-left: 20px;">
+    <div style="width: -webkit-fill-available;">
         <Toggle bind:toggled={showAllMangas} />
     </div>
 
@@ -242,8 +314,10 @@
         <Search bind:searchText />
     </div>
 
-    <div style="display: flex;
-    align-items: center;">
+    <div
+        style="display: flex;
+    align-items: center;"
+    >
         <button class="btn" on:click={openRandom}>
             <Random />
         </button>
@@ -263,18 +337,17 @@
             <GridOn />
         {/if}
     </button>
-    <div>
-
-    </div>
-    <div>
-
-    </div>
-    <div>
-
-    </div>
-    <div>
-
-    </div>
+    <button
+        data-augmented-ui="tr-clip bl-clip border"
+        class="btn-mode-toggle"
+        on:click={openFilter}
+    >
+        Filter
+    </button>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
 </div>
 
 <div data-tauri-drag-region class="app-bar">
@@ -294,7 +367,8 @@
         <div class="side-bar">
             <button
                 data-augmented-ui="tr-clip bl-clip border"
-                class="btn-mode-toggle" style="width: 200px;
+                class="btn-mode-toggle"
+                style="width: 200px;
                 height: 60px;"
                 on:click={toggleDrawer}
             >
@@ -328,6 +402,19 @@
 </div>
 
 <style>
+    .toggle-btn {
+        padding: 15px;
+        border: solid 1px var(--accent);
+        height: 40px;
+        width: 100%;
+        color: var(--primary-color);
+        --aug-border-all: 1px;
+        --aug-border-bg: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .drawer {
         display: flex;
         flex-direction: column;
@@ -355,7 +442,6 @@
         padding: 5px 15px;
         --aug-border-all: 1px;
         --aug-border-bg: var(--accent);
-        margin-left: 10px;
         border: none;
 
         --w: 2px; /* stroke width */
