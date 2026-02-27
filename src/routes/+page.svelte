@@ -6,7 +6,6 @@
     import ProgressBar from "../lib/progress-bar.svelte";
     import Dropdown from "../lib/dropdown.svelte";
     import Manga from "../lib/manga.svelte";
-    import Anime from "./anime.svelte";
     import Search from "$lib/search.svelte";
     import { invoke } from "@tauri-apps/api/core";
     import Random from "../lib/icon/random.svelte";
@@ -30,6 +29,7 @@
     let mangaListMode = "List";
     let showDraw = false;
     let ignoreHosts: string[] = [];
+    let showErrors = true;
 
     $: shuffleSample = false;
     $: sampleCount = 5;
@@ -46,9 +46,14 @@
                 }
             }
 
-            if (x["error"]) {
+            if (showErrors && x["error"]) {
                 return true;
             }
+
+            if(!showErrors && x["error"]){
+              return false;
+            }
+
             if (showAllMangas) {
                 return true;
             }
@@ -221,6 +226,17 @@
             ? ignoreHosts.filter((h) => h !== host)
             : [...ignoreHosts, host];
     }
+
+    function unselectAll() {
+        selectAll();
+        getUniqueHosts().forEach(function (manga: string) {
+            ignoreHosts = [...ignoreHosts, manga];
+        });
+    }
+
+    function selectAll() {
+        ignoreHosts = [];
+    }
 </script>
 
 <dialog
@@ -264,13 +280,37 @@
     data-augmented-ui="tr-clip bl-clip border"
 >
     <div
-        style="display: flex;flex-direction: column;height: 100%;color: var(--primary-color);align-items: center;"
+        style="display: flex;flex-direction: row;height: 100%;color: var(--primary-color);align-items: center;"
     >
-        <div>
+        <div
+            style="display: flex; flex-direction: column;justify-content: center;width: 160px;"
+        >
+            <div>
+                <button
+                    data-augmented-ui="tr-clip bl-clip border"
+                    class="btn-mode-toggle"
+                    style="width: 100%;"
+                    on:click={selectAll}
+                >
+                    Select All
+                </button>
+                <button
+                    data-augmented-ui="tr-clip bl-clip border"
+                    class="btn-mode-toggle"
+                    style="width: 100%;"
+                    on:click={unselectAll}
+                >
+                    Unselect All
+                </button>
+            </div>
+        </div>
+        <div
+            style="overflow: auto;padding: 0px 15px;height: 100%;width: 100%;display: flex;flex-direction: column;flex-wrap: wrap;"
+        >
             {#key mangaFinal}
                 {#each getUniqueHosts() as host}
                     <div
-                        style="display: flex; flex-direction: row;align-items: center;margin-bottom: 10px;"
+                        style="display: flex; flex-direction: row;align-items: center;margin-bottom: 10px;width: 150px"
                     >
                         <button
                             data-augmented-ui="tr-clip bl-clip border"
@@ -307,7 +347,7 @@
         <Dropdown bind:sort />
     </div>
     <div style="width: -webkit-fill-available;">
-        <Toggle bind:toggled={showAllMangas} />
+        <Toggle bind:toggled={showAllMangas} text="Show All Manga" />
     </div>
 
     <div>
@@ -344,7 +384,9 @@
     >
         Filter
     </button>
-    <div></div>
+    <div>
+        <Toggle bind:toggled={showErrors} text="Show Error" />
+    </div>
     <div></div>
     <div></div>
     <div></div>
@@ -392,9 +434,14 @@
         >
             {#key showAllMangas}
                 {#key sort}
-                    {#each mangaFinal as manga}
-                        <Manga propValue={manga} {mangaListMode}></Manga>
-                    {/each}
+                    {#key ignoreHosts}
+                        {#key showErrors}
+                            {#each mangaFinal as manga}
+                                <Manga propValue={manga} {mangaListMode}
+                                ></Manga>
+                            {/each}
+                        {/key}
+                    {/key}
                 {/key}
             {/key}
         </div>

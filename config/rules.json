@@ -29,7 +29,7 @@
     "value": "1"
   },
   {
-    "site_match": ["likemanga"],
+    "site_match": ["likemanga", "mangayy"],
     "page_check": "btn prev_page",
     "main_check": "next_page",
     "type": "toggle"
@@ -49,6 +49,12 @@
     "site_match": ["mangaread"],
     "page_check": "PREV",
     "main_check": "next_page",
+    "type": "auto"
+  },
+  {
+    "site_match": ["demonicscans"],
+    "page_check": "prevchap",
+    "main_check": "nextchap",
     "type": "auto"
   }
 ]

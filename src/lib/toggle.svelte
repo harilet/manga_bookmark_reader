@@ -1,5 +1,6 @@
 <script lang="ts">
     export let toggled = false;
+    export let text = "";
 
     function toggleState() {
         toggled = !toggled;
@@ -12,7 +13,7 @@
         class="toggle toggle-button-fill-enabled"
         on:click={toggleState}
     >
-        Showing: All Manga
+        {text}
     </button>
 {:else}
     <button
@@ -20,7 +21,7 @@
         class="toggle toggle-button-fill-disabled"
         on:click={toggleState}
     >
-        Show All Manga
+        {text}
     </button>
 {/if}
 
