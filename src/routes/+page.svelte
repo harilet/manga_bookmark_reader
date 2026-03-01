@@ -30,6 +30,8 @@
     let showDraw = false;
     let ignoreHosts: string[] = [];
     let showErrors = true;
+    let insideDrawer = false;
+    let color = "#81a1c1";
 
     $: shuffleSample = false;
     $: sampleCount = 5;
@@ -39,6 +41,9 @@
     $: savedUrlListLength = 0;
 
     $: {
+      const root = document.documentElement;
+      root.style.setProperty(`--primary-color`, color);
+
         mangaFiltered = list.filter((x) => {
             for (let host of ignoreHosts) {
                 if (x["url"].includes(host)) {
@@ -50,8 +55,8 @@
                 return true;
             }
 
-            if(!showErrors && x["error"]){
-              return false;
+            if (!showErrors && x["error"]) {
+                return false;
             }
 
             if (showAllMangas) {
@@ -237,6 +242,13 @@
     function selectAll() {
         ignoreHosts = [];
     }
+
+    function handleOutsideClick(event: MouseEvent) {
+        console.log(showDraw);
+        if (!insideDrawer) {
+            showDraw = false;
+        }
+    }
 </script>
 
 <dialog
@@ -331,32 +343,31 @@
     </div>
 </dialog>
 
+<svelte:window on:click={handleOutsideClick} />
+
 <div
     style={showDraw ? "left: 0" : ""}
     class="drawer"
     data-augmented-ui="tr-clip br-clip border"
+    role="navigation"
+    on:mouseleave={() => (insideDrawer = false)}
+    on:mouseenter={() => (insideDrawer = true)}
 >
-    <button
-        data-augmented-ui="tr-clip bl-clip border"
-        class="btn-mode-toggle"
-        on:click={toggleDrawer}
-    >
-        close
-    </button>
-    <div style="width: -webkit-fill-available;">
+    <div class="filter-items" style="width: -webkit-fill-available;">
         <Dropdown bind:sort />
     </div>
-    <div style="width: -webkit-fill-available;">
+    <div class="filter-items" style="width: -webkit-fill-available;">
         <Toggle bind:toggled={showAllMangas} text="Show All Manga" />
     </div>
 
-    <div>
+    <div class="filter-items">
         <Search bind:searchText />
     </div>
 
     <div
         style="display: flex;
     align-items: center;"
+        class="filter-items"
     >
         <button class="btn" on:click={openRandom}>
             <Random />
@@ -365,31 +376,37 @@
             {savedUrlListLength}
         </div>
     </div>
-
-    <button
-        data-augmented-ui="tr-clip bl-clip border"
-        class="btn-mode-toggle"
-        on:click={mangaListModeToggle}
-    >
-        {#if mangaListMode == "List"}
-            <Lists />
-        {:else}
-            <GridOn />
-        {/if}
-    </button>
-    <button
-        data-augmented-ui="tr-clip bl-clip border"
-        class="btn-mode-toggle"
-        on:click={openFilter}
-    >
-        Filter
-    </button>
-    <div>
+    <div class="filter-items">
+        <button
+            data-augmented-ui="tr-clip bl-clip border"
+            class="btn-mode-toggle"
+            style="width: -webkit-fill-available;"
+            on:click={mangaListModeToggle}
+        >
+            {#if mangaListMode == "List"}
+                <Lists />
+            {:else}
+                <GridOn />
+            {/if}
+        </button>
+    </div>
+    <div class="filter-items">
+        <button
+            data-augmented-ui="tr-clip bl-clip border"
+            class="btn-mode-toggle"
+            style="width: -webkit-fill-available;"
+            on:click={openFilter}
+        >
+            Filter
+        </button>
+    </div>
+    <div class="filter-items">
         <Toggle bind:toggled={showErrors} text="Show Error" />
     </div>
-    <div></div>
-    <div></div>
-    <div></div>
+
+    <div class="filter-items">
+        <input type="color" id="favcolor" name="favcolor" bind:value={color} />
+    </div>
 </div>
 
 <div data-tauri-drag-region class="app-bar">
@@ -413,8 +430,10 @@
                 style="width: 200px;
                 height: 60px;"
                 on:click={toggleDrawer}
+                on:mouseleave={() => (insideDrawer = false)}
+                on:mouseenter={() => (insideDrawer = true)}
             >
-                Drawer
+                Filter
             </button>
 
             <button
@@ -449,6 +468,14 @@
 </div>
 
 <style>
+    .filter-items {
+        height: 100%;
+        border-top: var(--border);
+        padding: 10px;
+        width: -webkit-fill-available;
+        display: flex;
+        align-items: center;
+    }
     .toggle-btn {
         padding: 15px;
         border: solid 1px var(--accent);
@@ -468,10 +495,9 @@
         position: absolute;
         top: 0;
         left: -30%;
-        height: calc(100% - 20px);
+        height: 100%;
         width: 20%;
         z-index: 5;
-        padding: 10px;
         background-color: var(--background-color);
         --aug-border-all: 1px;
         --aug-border-bg: var(--accent);

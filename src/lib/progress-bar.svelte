@@ -18,11 +18,8 @@
     let progress_bar_class = "";
     let mangaInThreadDialog: HTMLDialogElement;
     let mangaInThread: ThreadObj[]=[];
-    let color = "#81a1c1";
 
     $: {
-        const root = document.documentElement;
-        root.style.setProperty(`--primary-color`, color);
         if (value >= max) {
             progress_bar_class = "progress_done";
         } else {
@@ -117,14 +114,6 @@
                 on:change={onThreadCountChange}
                 style="text-align: center;"
             />
-            <div style="margin-left: 20px;">
-                <input
-                    type="color"
-                    id="favcolor"
-                    name="favcolor"
-                    bind:value={color}
-                />
-            </div>
         </div>
         <div class="main-scrollbar" style="overflow: auto;">
             {#key mangaInThread}
