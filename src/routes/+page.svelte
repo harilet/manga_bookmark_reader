@@ -244,7 +244,6 @@
     }
 
     function handleOutsideClick(event: MouseEvent) {
-        console.log(showDraw);
         if (!insideDrawer) {
             showDraw = false;
         }

@@ -5,12 +5,14 @@ use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 use tauri::async_runtime::block_on;
 use tauri::window::{Effect, EffectsBuilder};
 use tauri::AppHandle;
 use tauri::{Emitter, Manager};
+use tokio::sync::Semaphore;
 use utils::{convert_date, get_html, get_remaining_chapters, read_bookmark};
 
 use crate::utils::BookmarkData;
@@ -49,7 +51,6 @@ struct Rule {
 #[derive(Debug, Deserialize, Clone, serde::Serialize)]
 struct ThreadData {
     url: String,
-    thread_num: usize,
     added: bool,
 }
 
@@ -89,6 +90,7 @@ fn update_thread_count(app_handle: AppHandle, new_thread_count: u64) {
 async fn get_manga(app_handle: AppHandle) {
     let state = app_handle.state::<Mutex<AppData>>().to_owned();
     let worker_count = state.lock().unwrap().thread;
+    let semaphore = Arc::new(Semaphore::new(worker_count));
 
     let data = read_bookmark();
 
@@ -102,35 +104,28 @@ async fn get_manga(app_handle: AppHandle) {
     let json_data = fs::read_to_string(rules_file).unwrap();
     let rules: Vec<Rule> = serde_json::from_str(&json_data).unwrap();
 
-    let mut thread_data: Vec<Vec<BookmarkData>> = vec![Vec::new(); worker_count];
-    for (index, manga_data) in data.clone().into_iter().enumerate() {
-        thread_data[index % worker_count].push(manga_data.clone());
-    }
-
-    for (index, thread) in thread_data.clone().into_iter().enumerate() {
+    for (_, manga_data) in data.clone().into_iter().enumerate() {
+        let permit = semaphore.clone().acquire_owned().await.unwrap();
         let app_handle_2 = app_handle.app_handle().to_owned();
         let temp_rules = rules.clone();
         thread::Builder::new()
             .spawn(move || {
                 block_on(async {
-                    for manga_data in thread {
-                        let thread_data = ThreadData {
-                            url: manga_data.url.clone(),
-                            thread_num: index,
-                            added: true,
-                        };
-                        app_handle_2.emit("thread_update", thread_data).unwrap();
+                    let thread_data = ThreadData {
+                        url: manga_data.url.clone(),
+                        added: true,
+                    };
+                    app_handle_2.emit("thread_update", thread_data).unwrap();
 
-                        let payload = bookmark_check(manga_data.clone(), temp_rules.clone()).await;
-                        let thread_data = ThreadData {
-                            url: manga_data.url.clone(),
-                            thread_num: index,
-                            added: false,
-                        };
-                        app_handle_2.emit("thread_update", thread_data).unwrap();
+                    let payload = bookmark_check(manga_data.clone(), temp_rules.clone()).await;
+                    let thread_data = ThreadData {
+                        url: manga_data.url.clone(),
+                        added: false,
+                    };
+                    app_handle_2.emit("thread_update", thread_data).unwrap();
 
-                        app_handle_2.emit("scan_data", payload).unwrap();
-                    }
+                    app_handle_2.emit("scan_data", payload).unwrap();
+                    drop(permit);
                 })
             })
             .unwrap();

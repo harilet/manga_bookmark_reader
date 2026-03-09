@@ -5,9 +5,8 @@
     import dataStore from "./data_store";
 
     type ThreadObj = {
-      url: string;
-      thread: number;
-      added: boolean;
+        url: string;
+        added: boolean;
     };
 
     export let value = 0;
@@ -17,7 +16,7 @@
     $: threadCount = 0;
     let progress_bar_class = "";
     let mangaInThreadDialog: HTMLDialogElement;
-    let mangaInThread: ThreadObj[]=[];
+    let mangaInThread: ThreadObj[] = [];
 
     $: {
         if (value >= max) {
@@ -55,7 +54,7 @@
             if (data["added"] == true) {
                 mangaInThread = [
                     ...mangaInThread,
-                    { url: data["url"], thread: data["thread_num"], added: true },
+                    { url: data["url"], added: true },
                 ];
             } else {
                 let temp = mangaInThread.filter(function (x) {
@@ -93,9 +92,7 @@
     }
 
     function isThreadActive(threadNumber: number): boolean {
-        let isTActive = mangaInThread.some(
-            (item: any) => item.thread === threadNumber,
-        );
+        let isTActive = mangaInThread.length > threadNumber;
         return isTActive;
     }
 </script>
@@ -122,14 +119,7 @@
                         class="manga-in-thread"
                         data-augmented-ui="tr-clip bl-clip border"
                     >
-                        <div
-                            data-augmented-ui="all-hex-alt border"
-                            style="--aug-border-all: 1px;
-                        --aug-border-bg: var(--accent); margin-right: 10px; min-width: 30px;"
-                        >
-                            {manga_item["thread"]}
-                        </div>
-                            {manga_item["url"]}
+                        {manga_item["url"]}
                     </div>
                 {/each}
             {/key}
@@ -156,9 +146,7 @@
                         ? 'var(--accent)'
                         : 'transparent'};"
                 >
-                    <span>
-                        {i + 1}
-                    </span>
+                    <span> </span>
                 </div>
             {/each}
         {/key}
@@ -175,7 +163,7 @@
         transition: opacity 0.3s ease;
         background-color: var(--fill);
         border: var(--border);
-        width: 20px;
+        width: 10px;
         height: 20px;
         margin: 0px 1px;
         display: flex;
