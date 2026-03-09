@@ -92,6 +92,7 @@ fn create_http_client() -> Client {
         .user_agent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
         .pool_idle_timeout(tokio::time::Duration::from_secs(30))
         .pool_max_idle_per_host(4)
+        .cookie_store(true)
         .build()
         .unwrap()
 }
