@@ -1,5 +1,6 @@
 mod utils;
 
+use reqwest::Client;
 use serde::Deserialize;
 use std::env;
 use std::error::Error;
@@ -86,6 +87,15 @@ fn update_thread_count(app_handle: AppHandle, new_thread_count: u64) {
     state.thread = new_thread_count as usize;
 }
 
+fn create_http_client() -> Client {
+    Client::builder()
+        .user_agent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
+        .pool_idle_timeout(tokio::time::Duration::from_secs(30))
+        .pool_max_idle_per_host(4)
+        .build()
+        .unwrap()
+}
+
 #[tauri::command]
 async fn get_manga(app_handle: AppHandle) {
     let state = app_handle.state::<Mutex<AppData>>().to_owned();
@@ -103,11 +113,14 @@ async fn get_manga(app_handle: AppHandle) {
         exe_path.join("/home/cyber/Documents/tauri/manga_bookmark_reader_old/config/rules.json");
     let json_data = fs::read_to_string(rules_file).unwrap();
     let rules: Vec<Rule> = serde_json::from_str(&json_data).unwrap();
+    let client = create_http_client();
 
     for (_, manga_data) in data.clone().into_iter().enumerate() {
         let permit = semaphore.clone().acquire_owned().await.unwrap();
         let app_handle_2 = app_handle.app_handle().to_owned();
         let temp_rules = rules.clone();
+        let client = client.clone();
+
         thread::Builder::new()
             .spawn(move || {
                 block_on(async {
@@ -117,7 +130,8 @@ async fn get_manga(app_handle: AppHandle) {
                     };
                     app_handle_2.emit("thread_update", thread_data).unwrap();
 
-                    let payload = bookmark_check(manga_data.clone(), temp_rules.clone()).await;
+                    let payload =
+                        bookmark_check(client, manga_data.clone(), temp_rules.clone()).await;
                     let thread_data = ThreadData {
                         url: manga_data.url.clone(),
                         added: false,
@@ -134,8 +148,8 @@ async fn get_manga(app_handle: AppHandle) {
     app_handle.emit("scan_data", "done").unwrap();
 }
 
-async fn bookmark_check(manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
-    let response: String = get_html(&manga_data.url).await;
+async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
+    let response: String = get_html(client, &manga_data.url).await;
     // let response = "".to_string();
 
     let dt = convert_date(manga_data.date_added.clone());

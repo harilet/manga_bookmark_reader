@@ -3,6 +3,7 @@ use chrono::{Duration, TimeZone};
 use html_parser::Dom;
 use serde_json::Value;
 use std::fs;
+use reqwest::Client;
 
 #[derive(Clone, Debug)]
 pub(crate) struct BookmarkData {
@@ -78,12 +79,12 @@ pub(crate) fn convert_date(j: String) -> DelayedFormat<StrftimeItems<'static>> {
         .format("%d-%m-%Y");
 }
 
-pub(crate) async fn get_html(url: &str) -> String {
-    // let mut rng = rand::random_range(0..1);
+pub(crate) async fn get_html(client:Client, url: &str) -> String {
+    // let mut rng = rand::random_range(0..6);
     // tokio::time::sleep(tokio::time::Duration::from_secs(rng)).await;
 
     // return "".to_string();
-    match reqwest::get(url).await {
+    match client.get(url).send().await {
         Ok(response) => match response.text().await {
             Ok(html_text) => {
                 return html_text;
