@@ -1,5 +1,6 @@
 mod utils;
 
+use dashmap::DashMap;
 use reqwest::Client;
 use serde::Deserialize;
 use std::env;
@@ -14,6 +15,7 @@ use tauri::window::{Effect, EffectsBuilder};
 use tauri::AppHandle;
 use tauri::{Emitter, Manager};
 use tokio::sync::Semaphore;
+use url::Url;
 use utils::{convert_date, get_html, get_remaining_chapters, read_bookmark};
 
 use crate::utils::BookmarkData;
@@ -50,7 +52,7 @@ struct Rule {
 }
 
 #[derive(Debug, Deserialize, Clone, serde::Serialize)]
-struct ThreadData {
+struct ThreadViewData {
     url: String,
     added: bool,
 }
@@ -101,14 +103,10 @@ fn create_http_client() -> Client {
 async fn get_manga(app_handle: AppHandle) {
     let state = app_handle.state::<Mutex<AppData>>().to_owned();
     let worker_count = state.lock().unwrap().thread;
-    let semaphore = Arc::new(Semaphore::new(worker_count));
-
     let data = read_bookmark();
-
     app_handle
         .emit("scan_data", PayloadMangaSize { size: data.len() })
         .unwrap();
-
     let exe_path = get_exe_dir().unwrap();
     let rules_file =
         exe_path.join("/home/cyber/Documents/tauri/manga_bookmark_reader_old/config/rules.json");
@@ -116,8 +114,22 @@ async fn get_manga(app_handle: AppHandle) {
     let rules: Vec<Rule> = serde_json::from_str(&json_data).unwrap();
     let client = create_http_client();
 
+    // Per-host semaphores: each host gets its own Semaphore(worker_count)
+    let host_semaphores: Arc<DashMap<String, Arc<Semaphore>>> = Arc::new(DashMap::new());
+
     for (_, manga_data) in data.clone().into_iter().enumerate() {
-        let permit = semaphore.clone().acquire_owned().await.unwrap();
+        // Extract host from URL, fall back to full URL if parsing fails
+        let host = Url::parse(&manga_data.url)
+            .ok()
+            .and_then(|u| u.host_str().map(|h| h.to_string()))
+            .unwrap_or_else(|| manga_data.url.clone());
+
+        // Get or create a Semaphore(worker_count) for this host
+        let semaphore = host_semaphores
+            .entry(host)
+            .or_insert_with(|| Arc::new(Semaphore::new(worker_count)))
+            .clone();
+
         let app_handle_2 = app_handle.app_handle().to_owned();
         let temp_rules = rules.clone();
         let client = client.clone();
@@ -125,20 +137,19 @@ async fn get_manga(app_handle: AppHandle) {
         thread::Builder::new()
             .spawn(move || {
                 block_on(async {
-                    let thread_data = ThreadData {
+                    let permit = semaphore.acquire_owned().await.unwrap();
+                    let thread_data = ThreadViewData {
                         url: manga_data.url.clone(),
                         added: true,
                     };
                     app_handle_2.emit("thread_update", thread_data).unwrap();
-
                     let payload =
                         bookmark_check(client, manga_data.clone(), temp_rules.clone()).await;
-                    let thread_data = ThreadData {
+                    let thread_data = ThreadViewData {
                         url: manga_data.url.clone(),
                         added: false,
                     };
                     app_handle_2.emit("thread_update", thread_data).unwrap();
-
                     app_handle_2.emit("scan_data", payload).unwrap();
                     drop(permit);
                 })

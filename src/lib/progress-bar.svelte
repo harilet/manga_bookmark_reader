@@ -90,11 +90,6 @@
             mangaInThreadDialog.close();
         }
     }
-
-    function isThreadActive(threadNumber: number): boolean {
-        let isTActive = mangaInThread.length > threadNumber;
-        return isTActive;
-    }
 </script>
 
 <dialog
@@ -139,13 +134,9 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div style="display: flex;cursor: pointer;" on:click={showThreadCountInput}>
         {#key mangaInThread}
-            {#each [...Array(threadCount).keys()] as i (i)}
-                <div
-                    class="thread-box"
-                    style="--fill: {isThreadActive(i)
-                        ? 'var(--accent)'
-                        : 'transparent'};"
-                >
+            <span>Threads({mangaInThread.length}): </span>
+            {#each [...Array(mangaInThread.length).keys()] as i (i)}
+                <div class="thread-box" style="--fill: var(--accent)">
                     <span> </span>
                 </div>
             {/each}
