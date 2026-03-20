@@ -41,9 +41,6 @@
     $: savedUrlListLength = 0;
 
     $: {
-      const root = document.documentElement;
-      root.style.setProperty(`--primary-color`, color);
-
         mangaFiltered = list.filter((x) => {
             for (let host of ignoreHosts) {
                 if (x["url"].includes(host)) {
@@ -88,6 +85,13 @@
     }
 
     onMount(async () => {
+        dataStore.get("primary-color").then((data: any) => {
+            if (data != null) {
+                color = data;
+                changeColor();
+            }
+        });
+
         dataStore.get("savedUrlList").then((data: any) => {
             if (data != null) {
                 savedUrlListLength = data.length;
@@ -213,17 +217,21 @@
         filterDialog.showModal();
     }
 
-    function getUniqueHosts(): string[] {
-        const hosts = new Set<string>();
+    function getUniqueHosts(): Array<{ host: string; count: number }> {
+        const hostCounts = new Map<string, number>();
         list.forEach((manga) => {
             try {
                 const url = new URL(manga.url);
-                hosts.add(url.hostname);
+                const hostname = url.hostname;
+                hostCounts.set(hostname, (hostCounts.get(hostname) || 0) + 1);
             } catch (e) {
                 console.error("Invalid URL:", manga.url);
             }
         });
-        return Array.from(hosts);
+        return Array.from(hostCounts.entries()).map(([host, count]) => ({
+            host,
+            count,
+        }));
     }
 
     function toggleIgnoreHost(host: string) {
@@ -234,8 +242,8 @@
 
     function unselectAll() {
         selectAll();
-        getUniqueHosts().forEach(function (manga: string) {
-            ignoreHosts = [...ignoreHosts, manga];
+        getUniqueHosts().forEach(function ({ host }: { host: string }) {
+            ignoreHosts = [...ignoreHosts, host];
         });
     }
 
@@ -247,6 +255,12 @@
         if (!insideDrawer) {
             showDraw = false;
         }
+    }
+
+    async function changeColor() {
+        const root = document.documentElement;
+        root.style.setProperty(`--primary-color`, color);
+        await dataStore.set("primary-color", color);
     }
 </script>
 
@@ -319,9 +333,9 @@
             style="overflow: auto;padding: 0px 15px;height: 100%;width: 100%;display: flex;flex-direction: column;flex-wrap: wrap;"
         >
             {#key mangaFinal}
-                {#each getUniqueHosts() as host}
+                {#each getUniqueHosts() as { host, count }}
                     <div
-                        style="display: flex; flex-direction: row;align-items: center;margin-bottom: 10px;width: 150px"
+                        style="display: flex; flex-direction: row;align-items: center;margin-bottom: 10px;width: fit-content;"
                     >
                         <button
                             data-augmented-ui="tr-clip bl-clip border"
@@ -333,7 +347,12 @@
                             class="toggle-btn"
                             on:click={() => toggleIgnoreHost(host)}
                         >
-                            {host}
+                            <div style="margin-right: 5px;">
+                                {host}
+                            </div>
+                            <div>
+                                ({count})
+                            </div>
                         </button>
                     </div>
                 {/each}
@@ -404,7 +423,13 @@
     </div>
 
     <div class="filter-items">
-        <input type="color" id="favcolor" name="favcolor" bind:value={color} />
+        <input
+            type="color"
+            id="favcolor"
+            name="favcolor"
+            bind:value={color}
+            on:change={(_) => changeColor()}
+        />
     </div>
 </div>
 
