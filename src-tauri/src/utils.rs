@@ -80,13 +80,16 @@ pub(crate) fn convert_date(j: String) -> DelayedFormat<StrftimeItems<'static>> {
 }
 
 pub(crate) async fn get_html(client:Client, url: &str) -> String {
-    // let mut rng = rand::random_range(0..6);
+    // let mut rng = rand::random_range(0..3);
     // tokio::time::sleep(tokio::time::Duration::from_secs(rng)).await;
 
     // return "".to_string();
     match client.get(url).send().await {
         Ok(response) => match response.text().await {
             Ok(html_text) => {
+                if is_bot_block(html_text.as_str(), 200){
+                    println!("bot site");
+                }
                 return html_text;
             }
             Err(e) => {
@@ -99,6 +102,25 @@ pub(crate) async fn get_html(client:Client, url: &str) -> String {
             return "".to_owned();
         }
     }
+}
+
+fn is_bot_block(html: &str, status: u16) -> bool {
+    // 1. Obvious text markers
+    let text_match = html.contains("Enable JavaScript and cookies") ||
+                     html.contains("Just a moment") ||
+                     html.contains("Checking your browser") ||
+                     html.contains("cf-browser-verification");
+
+    // 2. Very small / suspicious HTML
+    let suspicious_size = html.len() < 5000;
+
+    // 3. Missing expected content (you KNOW what should be there)
+    let missing_target = !html.contains("expected-product-title-or-selector");
+
+    // 4. HTTP status anomalies
+    let bad_status = status == 403 || status == 503;
+
+    text_match || (suspicious_size && missing_target) || bad_status
 }
 
 pub(crate) fn get_remaining_chapters(response: String, site: String) -> RemainingChapters {

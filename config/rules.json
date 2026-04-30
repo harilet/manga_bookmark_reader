@@ -18,10 +18,10 @@
     "type": "toggle"
   },
   {
-    "site_match": ["asuracomic"],
-    "page_check": "Prev",
-    "main_check": "rounded-full\\s+cursor-not-allowed",
-    "type": "inverse_auto"
+    "site_match": ["asuracomic", "asurascans"],
+    "page_check": "rel=\"prev\"",
+    "main_check": "rel=\"next\"",
+    "type": "toggle"
   },
   {
     "site_match": ["mangadex"],
@@ -47,7 +47,7 @@
   },
   {
     "site_match": ["mangaread"],
-    "page_check": "PREV",
+    "page_check": "prev_page",
     "main_check": "next_page",
     "type": "auto"
   },
@@ -55,6 +55,32 @@
     "site_match": ["demonicscans"],
     "page_check": "prevchap",
     "main_check": "nextchap",
-    "type": "auto"
+    "type": "toggle"
+  },
+  {
+    "site_match": ["greedscans"],
+    "page_check": "nextprev",
+    "main_check": "\"nextUrl\":\"\"",
+    "type": "inverse_toggle"
+  },
+  {
+    "site_match": ["mgeko"],
+    "page_check": "chnav prev",
+    "main_check": "isDisabled chnav next",
+    "type": "inverse_toggle"
+  },
+    {
+    "site_match": ["mangablaze"],
+    "page_check": "<div class=\"nav-previous",
+    "main_check": "nav-next  free-chap",
+    "type": "toggle"
+  },
+    {
+    "site_match": ["mgread"],
+    "page_check": "aria-label=\"Previous page\"",
+    "main_check": "aria-label=\"Next page\"",
+    "type": "toggle"
   }
 ]
+
+
