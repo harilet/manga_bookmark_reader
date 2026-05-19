@@ -1,6 +1,7 @@
 mod utils;
 
 use dashmap::DashMap;
+use regex::Regex;
 use reqwest::Client;
 use serde::Deserialize;
 use std::env;
@@ -182,7 +183,7 @@ async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rul
 
         match rule.page_check {
             Some(page_check_data) => {
-                if !response.contains(&page_check_data) {
+                if !regex_is_match(&response, &page_check_data) {
                     return payload;
                 }
             }
@@ -200,7 +201,7 @@ async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rul
             }
             "auto" => match rule.main_check {
                 Some(main_rule) => {
-                    if response.contains(&main_rule) {
+                    if regex_is_match(&response, &main_rule) {
                         let remaining_chapters =
                             get_remaining_chapters(response.clone(), rule.site_match.join("/"));
                         payload.remaining_chapters = remaining_chapters.remaining.to_string();
@@ -214,7 +215,7 @@ async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rul
             },
             "inverse_auto" => match rule.main_check {
                 Some(main_rule) => {
-                    if !response.contains(&main_rule) {
+                    if !regex_is_match(&response, &main_rule) {
                         let remaining_chapters =
                             get_remaining_chapters(response.clone(), rule.site_match.join("/"));
                         payload.remaining_chapters = remaining_chapters.remaining.to_string();
@@ -228,7 +229,7 @@ async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rul
             },
             "toggle" => match rule.main_check {
                 Some(main_rule) => {
-                    if response.contains(&main_rule) {
+                    if regex_is_match(&response, &main_rule) {
                         payload.remaining_chapters = "1".to_string();
                     }
                     payload.error = false;
@@ -239,7 +240,7 @@ async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rul
             },
             "inverse_toggle" => match rule.main_check {
                 Some(main_rule) => {
-                    if !response.contains(&main_rule) {
+                    if !regex_is_match(&response, &main_rule) {
                         payload.remaining_chapters = "1".to_string();
                     }
                     payload.error = false;
@@ -255,6 +256,10 @@ async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rul
     }
 
     return payload;
+}
+
+fn regex_is_match(text: &str, pattern: &str) -> bool {
+    Regex::new(pattern).ok().map_or(false, |re| re.is_match(text))
 }
 
 fn get_exe_dir() -> Result<PathBuf, Box<dyn Error>> {

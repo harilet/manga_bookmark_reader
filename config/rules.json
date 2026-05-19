@@ -80,6 +80,12 @@
     "page_check": "aria-label=\"Previous page\"",
     "main_check": "aria-label=\"Next page\"",
     "type": "toggle"
+  },
+    {
+    "site_match": ["vortexscans"],
+    "page_check": "aria-label=\"Next\"",
+    "main_check": "<a[^>]*href=[^>]*aria-label=\"Next\">",
+    "type": "toggle"
   }
 ]
 
