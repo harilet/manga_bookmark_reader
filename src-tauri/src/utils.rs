@@ -4,6 +4,7 @@ use html_parser::Dom;
 use serde_json::Value;
 use std::fs;
 use reqwest::Client;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug)]
 pub(crate) struct BookmarkData {
@@ -17,6 +18,33 @@ pub(crate) struct BookmarkData {
 pub(crate) struct RemainingChapters {
     pub(crate) total: usize,
     pub(crate) remaining: usize,
+}
+
+fn default_order() -> String {
+    "ascending".to_string()
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub(crate) struct SiteParser {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub parser_type: String,
+    pub selector: String,
+    #[serde(default)]
+    pub offset: usize,
+    #[serde(default)]
+    pub json_key: String,
+    #[serde(default)]
+    pub json_chapter_list: String,
+    #[serde(default)]
+    pub json_label: String,
+    #[serde(default = "default_order")]
+    pub order: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub(crate) struct SiteParserConfig {
+    pub sites: Vec<SiteParser>,
 }
 
 pub(crate) fn read_bookmark() -> Vec<BookmarkData> {
@@ -123,138 +151,162 @@ fn is_bot_block(html: &str, status: u16) -> bool {
     text_match || (suspicious_size && missing_target) || bad_status
 }
 
+pub(crate) fn load_site_parsers() -> SiteParserConfig {
+    let config_path = "/home/cyber/Documents/tauri/manga_bookmark_reader_old/config/site_parsers.json";
+    let contents = fs::read_to_string(config_path)
+        .unwrap_or_else(|_| {
+            eprintln!("Failed to read site_parsers.json, using default config");
+            r#"{"sites": []}"#.to_string()
+        });
+    
+    serde_json::from_str(&contents)
+        .unwrap_or_else(|_| SiteParserConfig { sites: vec![] })
+}
+
 pub(crate) fn get_remaining_chapters(response: String, site: String) -> RemainingChapters {
-    if site == "natomanga/manganato".to_owned() {
-        return natomanga_manganato_remaining_chapters(response);
-    } else if site == "manhwaclan".to_owned() {
-        return manhwaclan_remaining_chapters(response);
-    } else if site == "asuracomic".to_owned() {
-        return asuracomic_remaining_chapters(response);
-    } else if site == "mangaread".to_owned() {
-        return mangaread_remaining_chapters(response);
-    } else {
-        return RemainingChapters {
+    let config = load_site_parsers();
+    
+    // Find the matching site parser in config
+    let parser = config.sites.iter()
+        .find(|p| p.name == site);
+    
+    match parser {
+        Some(p) => {
+            println!("Found parser for site: {}", site);
+            match p.parser_type.as_str() {
+                "html_select" => parse_html_select(&response, &p),
+                "json" => parse_json(&response, &p),
+                _ => RemainingChapters {
+                    total: 0,
+                    remaining: 0,
+                },
+            }
+        }
+        None => {
+            println!("No parser found for site: {}\n({:#?})", site, parser);
+            RemainingChapters {
+                total: 0,
+                remaining: 0,
+            }
+        }
+    }
+}
+
+fn parse_html_select(response: &str, parser: &SiteParser) -> RemainingChapters {
+    let start_pos = match response.find(&parser.selector) {
+        Some(pos) => pos + parser.offset,
+        None => return RemainingChapters {
             total: 0,
             remaining: 0,
-        };
-    }
-}
-
-fn manhwaclan_remaining_chapters(response: String) -> RemainingChapters {
-    let start_pos = response
-        .find("<select class=\"selectpicker single-chapter-select\" >")
-        .unwrap()
-        + 52;
+        },
+    };
 
     let response_2 = &response[start_pos..];
-    let end_bytes = response_2.find("</select>").unwrap();
+    let end_bytes = match response_2.find("</select>") {
+        Some(pos) => pos,
+        None => return RemainingChapters {
+            total: 0,
+            remaining: 0,
+        },
+    };
 
     let response_3 = &response_2[..end_bytes];
 
-    let dom = Dom::parse(response_3).unwrap();
+    let dom = match Dom::parse(response_3) {
+        Ok(d) => d,
+        Err(_) => return RemainingChapters {
+            total: 0,
+            remaining: 0,
+        },
+    };
 
     let mut selected_index = 0;
 
     for (i, option) in dom.children.iter().enumerate() {
-        let ele = option.element().unwrap();
-
-        if ele.attributes.contains_key("selected") {
-            selected_index = i;
+        if let Some(ele) = option.element() {
+            if ele.attributes.contains_key("selected") {
+                selected_index = i;
+            }
         }
     }
 
-    return RemainingChapters {
-        total: 0,
-        remaining: selected_index,
+    let total = dom.children.len();
+    let remaining = if parser.order.to_lowercase() == "descending" {
+        selected_index
+    } else {
+        total.saturating_sub(selected_index + 1)
     };
-}
 
-fn natomanga_manganato_remaining_chapters(response: String) -> RemainingChapters {
-    let start_pos = response
-        .find("<select class=\"navi-change-chapter\">")
-        .unwrap_or(0)
-        + 36;
-
-    let response_2 = &response[start_pos..];
-    let end_bytes = response_2.find("</select>").unwrap();
-
-    let response_3 = &response_2[..end_bytes];
-
-    let dom = Dom::parse(response_3).unwrap();
-
-    let mut selected_index = 0;
-
-    for (i, option) in dom.children.iter().enumerate() {
-        let ele = option.element().unwrap();
-
-        if ele.attributes.contains_key("selected") {
-            selected_index = i;
-        }
+    RemainingChapters {
+        total,
+        remaining,
     }
-
-    return RemainingChapters {
-        total: 0,
-        remaining: selected_index,
-    };
 }
 
-fn asuracomic_remaining_chapters(response: String) -> RemainingChapters {
-    let start_pos = response.find("selectedChapter").unwrap_or(0) - 3;
-    let response_2 = &response[start_pos..];
+fn parse_json(response: &str, parser: &SiteParser) -> RemainingChapters {
+    let start_pos = match response.find(&parser.json_key) {
+        Some(pos) => {
+            if pos >= 3 { pos - 3 } else { 0 }
+        },
+        None => return RemainingChapters {
+            total: 0,
+            remaining: 0,
+        },
+    };
 
-    let end_bytes = response_2.find("}]").unwrap() + 2;
+    let response_2 = &response[start_pos..];
+    let end_bytes = match response_2.find("}]") {
+        Some(pos) => pos + 2,
+        None => return RemainingChapters {
+            total: 0,
+            remaining: 0,
+        },
+    };
 
     let response_3 = &response_2[..end_bytes];
     let mut response_4 = response_3.replace("\\\"", "\"");
     response_4.push('}');
 
-    let chapter_obj: Value = serde_json::from_str(&response_4).unwrap();
+    let chapter_obj: Value = match serde_json::from_str(&response_4) {
+        Ok(obj) => obj,
+        Err(_) => return RemainingChapters {
+            total: 0,
+            remaining: 0,
+        },
+    };
 
-    let current_chapter = chapter_obj
-        .get("selectedChapter")
-        .unwrap()
-        .as_str()
-        .unwrap();
+    let current_chapter = match chapter_obj.get(&parser.json_key)
+        .and_then(|v| v.as_str()) {
+        Some(ch) => ch,
+        None => return RemainingChapters {
+            total: 0,
+            remaining: 0,
+        },
+    };
 
-    let chapter_list = chapter_obj
-        .get("chapterMapData")
-        .unwrap()
-        .as_array()
-        .unwrap();
+    let chapter_list = match chapter_obj.get(&parser.json_chapter_list)
+        .and_then(|v| v.as_array()) {
+        Some(list) => list,
+        None => return RemainingChapters {
+            total: 0,
+            remaining: 0,
+        },
+    };
 
     let index = chapter_list
         .iter()
-        .position(|r| r.get("label").unwrap() == current_chapter)
-        .unwrap();
+        .position(|r| r.get(&parser.json_label).map_or(false, |v| v == current_chapter))
+        .unwrap_or(0);
 
-    return RemainingChapters {
-        total: chapter_list.len(),
-        remaining: index,
+    let total = chapter_list.len();
+    let remaining = if parser.order.to_lowercase() == "descending" {
+        index
+    } else {
+        total.saturating_sub(index + 1)
     };
-}
 
-fn mangaread_remaining_chapters(response: String) -> RemainingChapters {
-    let start_pos = response.find("<select class=").unwrap_or(0) + 53;
-
-    let response_2 = &response[start_pos..];
-    let end_bytes = response_2.find("</select>").unwrap();
-
-    let response_3 = &response_2[..end_bytes];
-
-    let dom = Dom::parse(response_3).unwrap();
-
-    let mut selected_index = 0;
-
-    for (i, option) in dom.children.iter().enumerate() {
-        let ele = option.element().unwrap();
-
-        if ele.attributes.contains_key("selected") {
-            selected_index = i;
-        }
+    RemainingChapters {
+        total,
+        remaining,
     }
-
-    return RemainingChapters {
-        total: dom.children.len(),
-        remaining: selected_index,
-    };
 }

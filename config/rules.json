@@ -1,17 +1,5 @@
 [
   {
-    "site_match": ["natomanga", "manganato"],
-    "page_check": "PREV CHAPTER",
-    "main_check": "class=\"back\"",
-    "type": "auto"
-  },
-  {
-    "site_match": ["manhwaclan"],
-    "page_check": "class=\"btn prev_page\"",
-    "main_check": "class=\"btn next_page\"",
-    "type": "auto"
-  },
-  {
     "site_match": ["flamecomics"],
     "page_check": "Previous Chapter",
     "main_check": "Next Chapter",
@@ -55,7 +43,7 @@
     "site_match": ["demonicscans"],
     "page_check": "prevchap",
     "main_check": "nextchap",
-    "type": "toggle"
+    "type": "auto"
   },
   {
     "site_match": ["greedscans"],

@@ -1,0 +1,17 @@
+{
+  "sites": [
+    {
+      "name": "mangaread",
+      "type": "html_select",
+      "selector": "<select class=\"selectpicker single-chapter-select\" >",
+      "offset": 52,
+      "order": "descending"
+    },
+    {
+      "name": "demonicscans",
+      "type": "html_select",
+      "selector": "<select style=\"margin-right:10px;margin-left:10px;font-size:17px;max-width: 100%;\" onchange=\"location",
+      "offset": 16
+    }
+  ]
+}
