@@ -55,7 +55,7 @@
     "site_match": ["mgeko"],
     "page_check": "chnav prev",
     "main_check": "isDisabled chnav next",
-    "type": "inverse_toggle"
+    "type": "inverse_auto"
   },
     {
     "site_match": ["mangablaze"],
