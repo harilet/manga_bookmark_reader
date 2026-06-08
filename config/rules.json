@@ -1,80 +1,121 @@
 [
   {
-    "site_match": ["flamecomics"],
+    "site_match": [
+      "flamecomics"
+    ],
     "page_check": "Previous Chapter",
     "main_check": "Next Chapter",
     "type": "toggle"
   },
   {
-    "site_match": ["asuracomic", "asurascans"],
+    "site_match": [
+      "asuracomic",
+      "asurascans"
+    ],
     "page_check": "rel=\"prev\"",
     "main_check": "rel=\"next\"",
     "type": "toggle"
   },
   {
-    "site_match": ["mangadex"],
+    "site_match": [
+      "mangadex"
+    ],
     "type": "static",
     "value": "1"
   },
   {
-    "site_match": ["likemanga", "mangayy"],
+    "site_match": [
+      "likemanga",
+      "mangayy"
+    ],
     "page_check": "btn prev_page",
     "main_check": "next_page",
     "type": "toggle"
   },
   {
-    "site_match": ["hto.to", "xbato.com"],
+    "site_match": [
+      "hto.to",
+      "xbato.com"
+    ],
     "page_check": "Prev Chapter",
     "main_check": "Next Chapter",
     "type": "toggle"
   },
   {
-    "site_match": ["webtoons"],
+    "site_match": [
+      "webtoons"
+    ],
     "type": "static",
     "value": "1"
   },
   {
-    "site_match": ["mangaread"],
+    "site_match": [
+      "mangaread"
+    ],
     "page_check": "prev_page",
     "main_check": "next_page",
     "type": "auto"
   },
   {
-    "site_match": ["demonicscans"],
+    "site_match": [
+      "demonicscans"
+    ],
     "page_check": "prevchap",
     "main_check": "nextchap",
     "type": "auto"
   },
   {
-    "site_match": ["greedscans"],
+    "site_match": [
+      "greedscans"
+    ],
     "page_check": "nextprev",
     "main_check": "\"nextUrl\":\"\"",
     "type": "inverse_toggle"
   },
   {
-    "site_match": ["mgeko"],
+    "site_match": [
+      "mgeko"
+    ],
     "page_check": "chnav prev",
     "main_check": "isDisabled chnav next",
     "type": "inverse_auto"
   },
-    {
-    "site_match": ["mangablaze"],
+  {
+    "site_match": [
+      "mangablaze"
+    ],
     "page_check": "<div class=\"nav-previous",
     "main_check": "nav-next  free-chap",
     "type": "toggle"
   },
-    {
-    "site_match": ["mgread"],
+  {
+    "site_match": [
+      "mgread"
+    ],
     "page_check": "aria-label=\"Previous page\"",
     "main_check": "aria-label=\"Next page\"",
     "type": "toggle"
   },
-    {
-    "site_match": ["vortexscans"],
+  {
+    "site_match": [
+      "vortexscans"
+    ],
     "page_check": "aria-label=\"Next\"",
     "main_check": "<a[^>]*href=[^>]*aria-label=\"Next\">",
     "type": "toggle"
+  },
+  {
+    "site_match": [
+      "asmotoon"
+    ],
+    "type": "toggle",
+    "page_check": "aria-label=\"Next\"",
+    "main_check": "Next chapter"
+  },
+  {
+    "site_match": [
+      "comix.to"
+    ],
+    "type": "static"
   }
 ]
-
-

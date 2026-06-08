@@ -40,6 +40,8 @@ struct PayloadMangaSize {
 #[derive(Default)]
 struct AppData {
     thread: usize,
+    rules_path: Option<String>,
+    site_parser_rules_path: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -74,7 +76,12 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_manga, update_thread_count,])
+        .invoke_handler(tauri::generate_handler![
+            get_manga,
+            update_thread_count,
+            set_rules_path,
+            set_site_parser_rules_path,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -88,6 +95,20 @@ fn update_thread_count(app_handle: AppHandle, new_thread_count: u64) {
 
     // Modify the state:
     state.thread = new_thread_count as usize;
+}
+
+#[tauri::command]
+fn set_rules_path(app_handle: AppHandle, path: String) {
+    let state = app_handle.state::<Mutex<AppData>>().to_owned();
+    let mut state = state.lock().unwrap();
+    state.rules_path = Some(path);
+}
+
+#[tauri::command]
+fn set_site_parser_rules_path(app_handle: AppHandle, path: String) {
+    let state = app_handle.state::<Mutex<AppData>>().to_owned();
+    let mut state = state.lock().unwrap();
+    state.site_parser_rules_path = Some(path);
 }
 
 fn create_http_client() -> Client {
@@ -109,8 +130,22 @@ async fn get_manga(app_handle: AppHandle) {
         .emit("scan_data", PayloadMangaSize { size: data.len() })
         .unwrap();
     let exe_path = get_exe_dir().unwrap();
-    let rules_file =
-        exe_path.join("/home/cyber/Documents/tauri/manga_bookmark_reader_old/config/rules.json");
+    let rules_file: PathBuf = {
+        let configured = state.lock().unwrap().rules_path.clone();
+        if let Some(p) = configured {
+            PathBuf::from(p)
+        } else {
+            exe_path.join("config/rules.json")
+        }
+    };
+    let site_parser_rules_file: PathBuf = {
+        let configured = state.lock().unwrap().site_parser_rules_path.clone();
+        if let Some(p) = configured {
+            PathBuf::from(p)
+        } else {
+            exe_path.join("config/site_parser_rules.json")
+        }
+    };
     let json_data = fs::read_to_string(rules_file).unwrap();
     let rules: Vec<Rule> = serde_json::from_str(&json_data).unwrap();
     let client = create_http_client();
@@ -134,6 +169,7 @@ async fn get_manga(app_handle: AppHandle) {
         let app_handle_2 = app_handle.app_handle().to_owned();
         let temp_rules = rules.clone();
         let client = client.clone();
+        let temp_site_parser_rules_file = site_parser_rules_file.clone();
 
         thread::Builder::new()
             .spawn(move || {
@@ -144,8 +180,13 @@ async fn get_manga(app_handle: AppHandle) {
                         added: true,
                     };
                     app_handle_2.emit("thread_update", thread_data).unwrap();
-                    let payload =
-                        bookmark_check(client, manga_data.clone(), temp_rules.clone()).await;
+                    let payload = bookmark_check(
+                        client,
+                        manga_data.clone(),
+                        temp_rules.clone(),
+                        temp_site_parser_rules_file.clone(),
+                    )
+                    .await;
                     let thread_data = ThreadViewData {
                         url: manga_data.url.clone(),
                         added: false,
@@ -161,7 +202,12 @@ async fn get_manga(app_handle: AppHandle) {
     app_handle.emit("scan_data", "done").unwrap();
 }
 
-async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rule>) -> Payload {
+async fn bookmark_check(
+    client: Client,
+    manga_data: BookmarkData,
+    rules: Vec<Rule>,
+    site_parser_rules_file: PathBuf,
+) -> Payload {
     let response: String = get_html(client, &manga_data.url).await;
     // let response = "".to_string();
 
@@ -202,8 +248,11 @@ async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rul
             "auto" => match rule.main_check {
                 Some(main_rule) => {
                     if regex_is_match(&response, &main_rule) {
-                        let remaining_chapters =
-                            get_remaining_chapters(response.clone(), rule.site_match.join("/"));
+                        let remaining_chapters = get_remaining_chapters(
+                            response.clone(),
+                            rule.site_match.join("/"),
+                            site_parser_rules_file.clone(),
+                        );
                         payload.remaining_chapters = remaining_chapters.remaining.to_string();
                         payload.total_chapters = remaining_chapters.total.to_string();
                     }
@@ -216,8 +265,11 @@ async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rul
             "inverse_auto" => match rule.main_check {
                 Some(main_rule) => {
                     if !regex_is_match(&response, &main_rule) {
-                        let remaining_chapters =
-                            get_remaining_chapters(response.clone(), rule.site_match.join("/"));
+                        let remaining_chapters = get_remaining_chapters(
+                            response.clone(),
+                            rule.site_match.join("/"),
+                            site_parser_rules_file.clone(),
+                        );
                         payload.remaining_chapters = remaining_chapters.remaining.to_string();
                         payload.total_chapters = remaining_chapters.total.to_string();
                     }
@@ -259,7 +311,9 @@ async fn bookmark_check(client: Client, manga_data: BookmarkData, rules: Vec<Rul
 }
 
 fn regex_is_match(text: &str, pattern: &str) -> bool {
-    Regex::new(pattern).ok().map_or(false, |re| re.is_match(text))
+    Regex::new(pattern)
+        .ok()
+        .map_or(false, |re| re.is_match(text))
 }
 
 fn get_exe_dir() -> Result<PathBuf, Box<dyn Error>> {

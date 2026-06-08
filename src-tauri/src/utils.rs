@@ -3,6 +3,7 @@ use chrono::{Duration, TimeZone};
 use html_parser::Dom;
 use serde_json::Value;
 use std::fs;
+use std::path::PathBuf;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -151,9 +152,8 @@ fn is_bot_block(html: &str, status: u16) -> bool {
     text_match || (suspicious_size && missing_target) || bad_status
 }
 
-pub(crate) fn load_site_parsers() -> SiteParserConfig {
-    let config_path = "/home/cyber/Documents/tauri/manga_bookmark_reader_old/config/site_parsers.json";
-    let contents = fs::read_to_string(config_path)
+pub(crate) fn load_site_parsers(site_parser_rules_file: PathBuf) -> SiteParserConfig {
+    let contents = fs::read_to_string(site_parser_rules_file)
         .unwrap_or_else(|_| {
             eprintln!("Failed to read site_parsers.json, using default config");
             r#"{"sites": []}"#.to_string()
@@ -163,8 +163,8 @@ pub(crate) fn load_site_parsers() -> SiteParserConfig {
         .unwrap_or_else(|_| SiteParserConfig { sites: vec![] })
 }
 
-pub(crate) fn get_remaining_chapters(response: String, site: String) -> RemainingChapters {
-    let config = load_site_parsers();
+pub(crate) fn get_remaining_chapters(response: String, site: String, site_parser_rules_file: PathBuf) -> RemainingChapters {
+    let config = load_site_parsers(site_parser_rules_file);
     
     // Find the matching site parser in config
     let parser = config.sites.iter()
