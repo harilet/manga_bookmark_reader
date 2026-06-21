@@ -1,124 +1,77 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <link rel="icon" href="%sveltekit.assets%/favicon.png" />
-        <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-        />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap"
-            rel="stylesheet"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="https://unpkg.com/augmented-ui@2/augmented-ui.min.css"
-        />
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://unpkg.com/augmented-ui@2/augmented-ui.min.css"
+    />
 
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Tauri + SvelteKit + Typescript App</title>
-        %sveltekit.head%
-        <style>
-            :root {
-                --tw-text-opacity: 1;
-                --primary-color: #81a1c1;
-                --background-color: #0a0e1a;
-                --primary-disabled-color: color-mix(
-                    in srgb,
-                    var(--primary-color),
-                    var(--background-color)
-                );
-                --done-color: var(--primary-color);
-                --in-progress-color: color-mix(
-                    in srgb,
-                    var(--primary-color),
-                    transparent
-                );
-                --accent: color-mix(in srgb, var(--primary-color), transparent);
-                --border: solid 1px var(--accent);
-                --secondary-text: grey;
-            }
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tauri + SvelteKit + Typescript App</title>
+    %sveltekit.head%
+    <style>
+      :root {
+        --void: #07090a;
+        --panel: #0d1311;
+        --panel-soft: #101b16;
 
-            .main-scrollbar {
-                scrollbar-color: var(--primary-color) transparent;
-                scrollbar-width: thin;
-            }
+        --border-dim: rgba(61, 220, 132, 0.14);
+        --border-mid: rgba(61, 220, 132, 0.32);
 
-            .body {
-                height: calc(100vh - 2px);
-                margin: 0px;
-                border: solid 1px var(--accent);
-                background: var(--background-color);
-            }
+        --signal: #3ddc84;
+        --signal-soft: rgba(61, 220, 132, 0.12);
 
-            .font-style {
-                font-family: "Orbitron", sans-serif;
-                font-optical-sizing: auto;
-                font-weight: 400;
-                font-style: normal;
-                font-size: small;
-            }
+        --amber: #f5a623;
+        --fault: #ff5c5c;
 
-            .app {
-                display: contents;
-            }
+        --ink: #dffbe9;
+        --ink-muted: #6c8b7c;
+        --ink-dim: #33453c;
+      }
 
-            .all-corner-stroke {
-                --w: 3px; /* stroke thickness */
-                --l: 26px; /* corner length */
+      .main-scrollbar {
+        scrollbar-color: var(--signal) transparent;
+        scrollbar-width: thin;
+      }
 
-                background-image:
-                /* top-left */
-                    linear-gradient(var(--primary-color) 0 0),
-                    linear-gradient(var(--primary-color) 0 0),
-                    /* top-right */ linear-gradient(var(--primary-color) 0 0),
-                    linear-gradient(var(--primary-color) 0 0),
-                    /* bottom-left */ linear-gradient(var(--primary-color) 0 0),
-                    linear-gradient(var(--primary-color) 0 0),
-                    /* bottom-right */ linear-gradient(var(--primary-color) 0 0),
-                    linear-gradient(var(--primary-color) 0 0),
-                    /* panel background */
-                    linear-gradient(
-                            180deg,
-                            var(--background-color),
-                            var(--background-color)
-                        );
+      .body {
+        height: calc(100vh - 2px);
+        margin: 0px;
+        border: solid 1px var(--signal);
+        background: var(--void);
+      }
 
-                background-size:
-                    var(--l) var(--w),
-                    var(--w) var(--l),
-                    var(--l) var(--w),
-                    var(--w) var(--l),
-                    var(--l) var(--w),
-                    var(--w) var(--l),
-                    var(--l) var(--w),
-                    var(--w) var(--l),
-                    100% 100%;
+      .font-style {
+        font-family: "Orbitron", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 400;
+        font-style: normal;
+        font-size: small;
+      }
 
-                background-position:
-                    left top,
-                    left top,
-                    right top,
-                    right top,
-                    left bottom,
-                    left bottom,
-                    right bottom,
-                    right bottom,
-                    0 0;
+      .app {
+        display: contents;
+      }
+    </style>
+  </head>
 
-                background-repeat: no-repeat;
-            }
-        </style>
-    </head>
-
-    <body
-        data-sveltekit-preload-data="hover"
-        class="body font-style all-corner-stroke"
-    >
-        <div class="app">%sveltekit.body%</div>
-    </body>
+  <body
+    data-sveltekit-preload-data="hover"
+    class="body font-style"
+  >
+    <div class="app">%sveltekit.body%</div>
+  </body>
 </html>

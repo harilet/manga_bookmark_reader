@@ -2,93 +2,21 @@
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
   import Titlebar from "../lib/titlebar.svelte";
-  import Toggle from "../lib/toggle.svelte";
-  import ProgressBar from "../lib/progress-bar.svelte";
-  import Dropdown from "../lib/dropdown.svelte";
-  import Manga from "../lib/manga.svelte";
-  import Search from "$lib/search.svelte";
   import { invoke } from "@tauri-apps/api/core";
   import dataStore from "$lib/data_store";
-  import Lists from "$lib/icon/lists.svelte";
-  import GridOn from "$lib/icon/grid_on.svelte";
-  import Input from "$lib/input.svelte";
+  import Cinput from "$lib/cinput.svelte";
+  import ConfigFilesView from "$lib/config-files-view.svelte";
+  import MangaView from "$lib/manga-view.svelte";
 
-  let showAllMangas = false;
+  let searchValue: string = "";
+  let disabled = false;
   let totalSize = 0;
   var list: any[] = [];
-  let disabled = false;
   let sort = "Default";
-  let mangaFiltered: any[];
-  let mangaSortedAndFiltered: any[];
-  let mangaFinal: any[];
-  let filterDialog: HTMLDialogElement;
-  let settingsDialog: HTMLDialogElement;
-  let mangaListMode = "List";
-  let showDraw = false;
-  let ignoreHosts: string[] = [];
-  let showErrors = true;
-  let insideDrawer = false;
-  let color = "#81a1c1";
-
-  $: listLength = list.length;
-  $: finalLength = mangaFinal.length;
-  $: searchText = "";
-  $: rules_path = "";
-  $: site_parser_rules_path = "";
-
-  $: {
-    mangaFiltered = list.filter((x) => {
-      for (let host of ignoreHosts) {
-        if (x["url"].includes(host)) {
-          return false;
-        }
-      }
-
-      if (showErrors && x["error"]) {
-        return true;
-      }
-
-      if (!showErrors && x["error"]) {
-        return false;
-      }
-
-      if (showAllMangas) {
-        return true;
-      }
-
-      return x["remaining_chapters"] > 0;
-    });
-
-    mangaSortedAndFiltered = mangaFiltered.toSorted((a, b) => {
-      if (sort == "Index") {
-        return a["index"] - b["index"];
-      } else if (sort == "Remaining") {
-        return a["remaining_chapters"] - b["remaining_chapters"];
-      }
-      return 0;
-    });
-
-    mangaFinal = mangaSortedAndFiltered.filter((x) => {
-      let url: string = x["url"];
-      let name: string = x["name"];
-      if (url.search(searchText) != -1) {
-        return true;
-      } else if (name.search(searchText) != -1) {
-        return true;
-      }
-      return false;
-    });
-  }
 
   onMount(async () => {
-    dataStore.get("primary-color").then((data: any) => {
-      if (data != null) {
-        color = data;
-        changeColor();
-      }
-    });
-
     await listen("scan_data", (event) => {
+      console.log(event.payload);
       if (event.payload == "done") {
         disabled = false;
       } else {
@@ -103,48 +31,6 @@
         }
       }
     });
-
-    filterDialog.addEventListener("click", function (event) {
-      var rect = filterDialog.getBoundingClientRect();
-      var isInDialog =
-        rect.top <= event.clientY &&
-        event.clientY <= rect.top + rect.height &&
-        rect.left <= event.clientX &&
-        event.clientX <= rect.left + rect.width;
-      if (!isInDialog) {
-        filterDialog.close();
-      }
-    });
-
-    settingsDialog.addEventListener("click", function (event) {
-      var rect = settingsDialog.getBoundingClientRect();
-      var isInDialog =
-        rect.top <= event.clientY &&
-        event.clientY <= rect.top + rect.height &&
-        rect.left <= event.clientX &&
-        event.clientX <= rect.left + rect.width;
-      if (!isInDialog) {
-        settingsDialog.close();
-      }
-    });
-
-    let temp_rules_path = await dataStore.get("set_rules_path");
-    let temp_site_parser_rules_path = await dataStore.get(
-      "set_site_parser_rules_path",
-    );
-    if (typeof temp_rules_path === "string") {
-      rules_path = temp_rules_path;
-      invoke("set_rules_path", {
-        path: temp_rules_path,
-      });
-    }
-
-    if (typeof temp_site_parser_rules_path === "string") {
-      site_parser_rules_path = temp_site_parser_rules_path;
-      invoke("set_site_parser_rules_path", {
-        path: temp_site_parser_rules_path,
-      });
-    }
   });
 
   function eventEmit() {
@@ -152,578 +38,267 @@
       invoke("get_manga");
     }
   }
-
-  function mangaListModeToggle() {
-    mangaListMode = mangaListMode === "List" ? "Grid" : "List";
-  }
-
-  function toggleDrawer() {
-    showDraw = !showDraw;
-  }
-
-  function openFilter() {
-    filterDialog.showModal();
-  }
-
-  function openSettings() {
-    settingsDialog.showModal();
-  }
-
-  function getUniqueHosts(): Array<{ host: string; count: number }> {
-    const hostCounts = new Map<string, number>();
-    list.forEach((manga) => {
-      try {
-        const url = new URL(manga.url);
-        const hostname = url.hostname;
-        hostCounts.set(hostname, (hostCounts.get(hostname) || 0) + 1);
-      } catch (e) {
-        console.error("Invalid URL:", manga.url);
-      }
-    });
-    return Array.from(hostCounts.entries()).map(([host, count]) => ({
-      host,
-      count,
-    }));
-  }
-
-  function toggleIgnoreHost(host: string) {
-    ignoreHosts = ignoreHosts.includes(host)
-      ? ignoreHosts.filter((h) => h !== host)
-      : [...ignoreHosts, host];
-  }
-
-  function unselectAll() {
-    selectAll();
-    getUniqueHosts().forEach(function ({ host }: { host: string }) {
-      ignoreHosts = [...ignoreHosts, host];
-    });
-  }
-
-  function selectAll() {
-    ignoreHosts = [];
-  }
-
-  function handleOutsideClick(event: MouseEvent) {
-    if (!insideDrawer) {
-      showDraw = false;
-    }
-  }
-
-  async function changeColor() {
-    const root = document.documentElement;
-    root.style.setProperty(`--primary-color`, color);
-    await dataStore.set("primary-color", color);
-  }
-
-  async function onRulesPathChange(data: any) {
-    let dataValue = data.target.value;
-    if (dataValue !== "") {
-      await dataStore.set("set_rules_path", dataValue);
-      invoke("set_rules_path", {
-        path: dataValue,
-      });
-    }
-  }
-
-  async function onSiteParserRulesPathChange(data: any) {
-    let dataValue = data.target.value;
-    if (dataValue !== "") {
-      await dataStore.set("set_site_parser_rules_path", dataValue);
-      invoke("set_site_parser_rules_path", {
-        path: dataValue,
-      });
-    }
-  }
 </script>
 
-<dialog
-  bind:this={settingsDialog}
-  on:close
-  class="main-scrollbar"
-  data-augmented-ui="tr-clip bl-clip border"
->
-  <div
-    style="display: flex;
-justify-content: center;
-height: 100%;
-flex-direction: column;
-width: 50%;
-margin: auto;"
-  >
-    <h2 style="color: var(--primary-color)">Settings</h2>
-    <div style="color: var(--primary-color)">Rules Json File Path</div>
-
-    <div
-      class="all-corner-stroke input-box"
-      style="width: 100%;margin-bottom: 20px;margin-top: 5px;"
-    >
-      <input
-        type="text"
-        placeholder="rules path"
-        value={rules_path}
-        on:change={onRulesPathChange}
-      />
-    </div>
-    <div style="color: var(--primary-color)">
-      Site Parser Rules Json File Path
-    </div>
-    <div
-      class="all-corner-stroke input-box"
-      style="width: 100%;margin-bottom: 20px;margin-top: 5px;"
-    >
-      <input
-        type="text"
-        placeholder="site parser rules path"
-        value={site_parser_rules_path}
-        on:change={onSiteParserRulesPathChange}
-      />
-    </div>
-    <div style="color: var(--primary-color)">App Color</div>
-    <div style="margin-top: 5px;">
-      <input
-        type="color"
-        id="favcolor"
-        name="favcolor"
-        bind:value={color}
-        on:change={(_) => changeColor()}
-      />
-    </div>
-  </div>
-</dialog>
-
-<dialog
-  bind:this={filterDialog}
-  on:close
-  class="main-scrollbar"
-  data-augmented-ui="tr-clip bl-clip border"
->
-  <div
-    style="display: flex;flex-direction: row;height: 100%;color: var(--primary-color);align-items: center;"
-  >
-    <div
-      style="display: flex; flex-direction: column;justify-content: center;width: 160px;"
-    >
-      <div>
-        <button
-          data-augmented-ui="tr-clip bl-clip border"
-          class="btn-mode-toggle"
-          style="width: 100%;"
-          on:click={selectAll}
-        >
-          Select All
-        </button>
-        <button
-          data-augmented-ui="tr-clip bl-clip border"
-          class="btn-mode-toggle"
-          style="width: 100%;"
-          on:click={unselectAll}
-        >
-          Unselect All
-        </button>
-      </div>
-    </div>
-    <div
-      style="overflow: auto;padding: 0px 15px;height: 100%;width: 100%;display: flex;flex-direction: column;flex-wrap: wrap;"
-    >
-      {#key mangaFinal}
-        {#each getUniqueHosts() as { host, count }}
-          <div
-            style="display: flex; flex-direction: row;align-items: center;margin-bottom: 10px;width: fit-content;"
-          >
-            <button
-              data-augmented-ui="tr-clip bl-clip border"
-              style="background-color: var({ignoreHosts.includes(host)
-                ? '--background-color'
-                : '--accent'});"
-              class="toggle-btn"
-              on:click={() => toggleIgnoreHost(host)}
-            >
-              <div style="margin-right: 5px;">
-                {host}
-              </div>
-              <div>
-                ({count})
-              </div>
-            </button>
-          </div>
-        {/each}
-      {/key}
-    </div>
-  </div>
-</dialog>
-
-<svelte:window on:click={handleOutsideClick} />
-
-<div
-  style={showDraw ? "left: 0" : ""}
-  class="drawer"
-  data-augmented-ui="tr-clip br-clip border"
-  role="navigation"
-  on:mouseleave={() => (insideDrawer = false)}
-  on:mouseenter={() => (insideDrawer = true)}
->
-  <div class="filter-items" style="width: -webkit-fill-available;">
-    <Dropdown bind:sort />
-  </div>
-  <div class="filter-items" style="width: -webkit-fill-available;">
-    <Toggle bind:toggled={showAllMangas} text="Show All Manga" />
-  </div>
-
-  <div class="filter-items">
-    <Search bind:searchText />
-  </div>
-
-  <div class="filter-items">
-    <button
-      data-augmented-ui="tr-clip bl-clip border"
-      class="btn-mode-toggle"
-      style="width: -webkit-fill-available;"
-      on:click={mangaListModeToggle}
-    >
-      {#if mangaListMode == "List"}
-        <Lists />
-      {:else}
-        <GridOn />
-      {/if}
-    </button>
-  </div>
-  <div class="filter-items">
-    <button
-      data-augmented-ui="tr-clip bl-clip border"
-      class="btn-mode-toggle"
-      style="width: -webkit-fill-available;"
-      on:click={openFilter}
-    >
-      Filter
-    </button>
-  </div>
-  <div class="filter-items">
-    <Toggle bind:toggled={showErrors} text="Show Error" />
-  </div>
-
-  <div class="filter-items">
-    <button
-      data-augmented-ui="tr-clip bl-clip border"
-      class="btn-mode-toggle"
-      style="width: -webkit-fill-available;"
-      on:click={openSettings}
-    >
-      Settings
-    </button>
-  </div>
-</div>
-
 <div data-tauri-drag-region class="app-bar">
-  <Titlebar />
+  <Titlebar>
+    <div class="top-level-filter">
+      <Cinput placeholder="search threads…" value={searchValue}>
+        <circle cx="11" cy="11" r="7" /><line
+          x1="21"
+          y1="21"
+          x2="16.65"
+          y2="16.65"
+        />
+      </Cinput>
+
+      <button class="fetch" on:click={eventEmit}><span class="pulse"></span>fetch now</button>
+    </div>
+  </Titlebar>
 </div>
 
 <div class="app">
-  <div class="top-progress-bar-area">
-    <ProgressBar value={listLength} max={totalSize} listCount={finalLength} />
+  <details class="panel">
+    <summary>
+      <span class="l">filters &amp; config</span>
+      <span class="right"
+        ><span class="badge" id="sourcesBadge"></span><span class="chev">▸</span
+        ></span
+      >
+    </summary>
+    <div class="panel-body">
+      <div class="panel-section">
+        <div class="section-head">
+          <span class="section-label">by source</span>
+          <div class="sources-actions">
+            <button class="mini-btn" id="selectAll">select all</button>
+            <button class="mini-btn" id="clearAll">clear all</button>
+          </div>
+        </div>
+        <div class="chips" id="chips">
+          <span class="chip" data-source=""
+            >Asura <span class="count">(1)</span></span
+          >
+          <span class="chip off" data-source=""
+            >Asura <span class="count">(1)</span></span
+          >
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <ConfigFilesView />
+    </div>
+  </details>
+  <div class="rail" id="rail">
+    <span style="flex:1; background:var(--signal)"></span><span
+      style="flex:5; background:var(--amber)"
+    ></span><span style="flex:3; background:var(--ink-dim)"></span><span
+      style="flex:3; background:var(--fault)"
+    ></span>
   </div>
 
-  <div class="main-area">
-    <div class="side-bar">
-      <button
-        data-augmented-ui="tr-clip bl-clip border"
-        class="btn-mode-toggle"
-        style="width: 200px;
-                height: 60px;"
-        on:click={toggleDrawer}
-        on:mouseleave={() => (insideDrawer = false)}
-        on:mouseenter={() => (insideDrawer = true)}
-      >
-        Filter
-      </button>
-
-      <button
-        data-augmented-ui="tr-clip bl-clip border"
-        class="fetch-button font-style {disabled
-          ? 'fetch-button-disabled'
-          : 'fetch-button-enabled'}"
-        on:click={eventEmit}
-      >
-        {disabled ? "Fetching" : "Fetch"}
-      </button>
-    </div>
-    <div
-      class="main-scrollbar {mangaListMode == 'List'
-        ? 'manga-list'
-        : 'manga-grid'}"
-    >
-      {#key showAllMangas}
-        {#key sort}
-          {#key ignoreHosts}
-            {#key showErrors}
-              {#each mangaFinal as manga}
-                <Manga propValue={manga} {mangaListMode}></Manga>
-              {/each}
-            {/key}
-          {/key}
-        {/key}
-      {/key}
-    </div>
+  <div class="manga-area">
+    {#each list as manga}
+      <MangaView />
+    {/each}
   </div>
 </div>
 
 <style>
-  .filter-items {
-    height: 100%;
-    border-top: var(--border);
-    padding: 10px;
-    width: -webkit-fill-available;
-    display: flex;
-    align-items: center;
-  }
-  .toggle-btn {
-    padding: 15px;
-    border: solid 1px var(--accent);
-    height: 40px;
-    width: 100%;
-    color: var(--primary-color);
-    --aug-border-all: 1px;
-    --aug-border-bg: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .drawer {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 0;
-    left: -30%;
-    height: 100%;
-    width: 20%;
-    z-index: 5;
-    background-color: var(--background-color);
-    --aug-border-all: 1px;
-    --aug-border-bg: var(--accent);
-    justify-content: space-between;
-
-    transition: all 0.3s ease-in-out;
-  }
-
-  .btn-mode-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary-color);
-    border: var(--border);
-    padding: 5px 15px;
-    --aug-border-all: 1px;
-    --aug-border-bg: var(--accent);
-    border: none;
-
-    --w: 2px; /* stroke width */
-    --l: 24px; /* corner length */
-
-    background-image:
-          /* top-left horizontal */
-      linear-gradient(var(--primary-color) 0 0),
-      /* top-left vertical */ linear-gradient(var(--primary-color) 0 0),
-      /* bottom-right horizontal */ linear-gradient(var(--primary-color) 0 0),
-      /* bottom-right vertical */ linear-gradient(var(--primary-color) 0 0),
-      /* panel background */
-        linear-gradient(
-          180deg,
-          var(--background-color),
-          var(--background-color)
-        );
-
-    background-size:
-      var(--l) var(--w),
-      var(--w) var(--l),
-      var(--l) var(--w),
-      var(--w) var(--l),
-      100% 100%;
-
-    background-position:
-      left top,
-      left top,
-      right bottom,
-      right bottom,
-      0 0;
-
-    background-repeat: no-repeat;
-  }
-
-  .top-progress-bar-area {
-    background-color: color-mix(
-      in oklab,
-      var(--color-slate-900) 30%,
-      transparent
-    );
-  }
   .app-bar {
     width: 100%;
-    height: 35px;
   }
+
   .app {
     width: 100%;
     display: flex;
     flex-direction: column;
+    height: calc(100% - 45px);
   }
 
-  .main-area {
+  .top-level-filter {
+    padding-top: 10px;
+    padding-left: 10px;
     display: flex;
-    flex-direction: column;
-    height: calc(100vh - 90px);
   }
 
-  .side-bar {
-    height: auto;
-    width: 100%;
+  .fetch {
+    background: var(--signal-soft);
+    border: 1px solid var(--signal);
+    color: var(--signal);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 9px 16px;
+    border-radius: 6px;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    flex-direction: row;
-    position: relative;
-    border-bottom: solid 1px var(--accent);
+    gap: 8px;
+    transition: background 0.15s ease;
+  }
+  .fetch:hover {
+    background: rgba(61, 220, 132, 0.22);
   }
 
-  .manga-list {
-    overflow: auto;
+  .pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--signal);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+
+  details.panel {
+    background: var(--panel);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  details.panel summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 12px 16px;
     display: flex;
-    flex-direction: column;
-    align-content: baseline;
-    padding: 10px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  details.panel summary::-webkit-details-marker {
+    display: none;
+  }
+  details.panel summary .l {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  details.panel summary .right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  details.panel summary .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+  details.panel summary .chev {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    transition: transform 0.15s ease;
+  }
+  details.panel[open] summary .chev {
+    transform: rotate(90deg);
+  }
+  details.panel .panel-body {
+    padding: 0 16px 16px;
+  }
+  .panel-section .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .panel-section .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .panel-divider {
+    height: 1px;
+    background: var(--border-dim);
+    margin: 14px 0;
+  }
+  .mini-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    background: none;
+    border: 1px solid var(--border-dim);
+    padding: 5px 11px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .mini-btn:hover {
+    color: var(--ink);
+    border-color: var(--border-mid);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 6px 18px 6px 11px;
+    background: var(--signal-soft);
+    border: 1px solid var(--signal);
+    color: var(--signal);
+    clip-path: polygon(
+      0 0,
+      calc(100% - 9px) 0,
+      100% 50%,
+      calc(100% - 9px) 100%,
+      0 100%
+    );
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    user-select: none;
+    transition:
+      opacity 0.15s ease,
+      background 0.15s ease;
+  }
+  .chip .count {
+    color: var(--ink-muted);
+  }
+  .chip.off {
+    background: transparent;
+    border-color: var(--border-dim);
+    color: var(--ink-dim);
+  }
+  .chip.off .count {
+    color: var(--ink-dim);
+  }
+  .chip:hover {
+    opacity: 0.85;
   }
 
-  .manga-grid {
+  .rail {
+    display: flex;
+    gap: 2px;
+    height: 2px;
+  }
+  .rail span {
+    border-radius: 1px;
+  }
+
+  .manga-area {
     overflow: auto;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     align-content: baseline;
     padding: 10px;
-  }
-
-  .fetch-button {
-    color: var(--background-color);
-    width: 200px;
-    border: none;
-    height: 60px;
-    margin-left: auto;
-
-    --aug-border-all: 1px;
-    --aug-border-bg: var(--accent);
-  }
-
-  .fetch-button-enabled {
-    background: var(--background-color);
-    cursor: pointer;
-    color: var(--primary-color);
-  }
-
-  .fetch-button-disabled {
-    color: var(--primary-color);
-    cursor: wait;
-
-    --w: 3px; /* stroke width */
-    --l: 26px; /* corner length */
-
-    background-image:
-          /* top-left horizontal */
-      linear-gradient(var(--primary-color) 0 0),
-      /* top-left vertical */ linear-gradient(var(--primary-color) 0 0),
-      /* bottom-right horizontal */ linear-gradient(var(--primary-color) 0 0),
-      /* bottom-right vertical */ linear-gradient(var(--primary-color) 0 0),
-      /* panel background */
-        linear-gradient(
-          180deg,
-          var(--background-color),
-          var(--background-color)
-        );
-
-    background-size:
-      var(--l) var(--w),
-      var(--w) var(--l),
-      var(--l) var(--w),
-      var(--w) var(--l),
-      100% 100%;
-
-    background-position:
-      left top,
-      left top,
-      right bottom,
-      right bottom,
-      0 0;
-
-    background-repeat: no-repeat;
-  }
-
-  dialog {
-    --aug-border-all: 1px;
-    --aug-border-bg: var(--accent);
-
-    border-radius: 5px;
-    border-width: 1px;
-    transition: all 2s;
-    width: 90%;
-    z-index: 2;
-    height: 70%;
-    padding: 20px;
-    background-color: var(--background-color);
-    border: var(--border);
-
-    --w: 3px; /* stroke width */
-    --l: 26px; /* corner length */
-
-    background-image:
-          /* top-left horizontal */
-      linear-gradient(var(--primary-color) 0 0),
-      /* top-left vertical */ linear-gradient(var(--primary-color) 0 0),
-      /* bottom-right horizontal */ linear-gradient(var(--primary-color) 0 0),
-      /* bottom-right vertical */ linear-gradient(var(--primary-color) 0 0),
-      /* panel background */
-        linear-gradient(
-          180deg,
-          var(--background-color),
-          var(--background-color)
-        );
-
-    background-size:
-      var(--l) var(--w),
-      var(--w) var(--l),
-      var(--l) var(--w),
-      var(--w) var(--l),
-      100% 100%;
-
-    background-position:
-      left top,
-      left top,
-      right bottom,
-      right bottom,
-      0 0;
-
-    background-repeat: no-repeat;
-  }
-
-  dialog::backdrop {
-    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
-    animation: fade-in 1s;
-  }
-
-  .input-box {
-    border: solid 1px var(--primary-color);
-    height: 30px;
-    margin: 0px;
-    padding: 1px 5px;
-    display: flex;
-    align-items: center;
-    justify-items: center;
-  }
-
-  input[type="text"] {
-    height: 20px;
-    background: transparent;
-    color: var(--primary-color);
-    border: none;
-    width: -webkit-fill-available;
-  }
-
-  input[type="text"]:focus-visible {
-    outline: none !important;
+    height: 100%;
   }
 </style>

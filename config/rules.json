@@ -98,7 +98,8 @@
   },
   {
     "site_match": [
-      "vortexscans"
+      "vortexscans",
+      "kaynscan"
     ],
     "page_check": "aria-label=\"Next\"",
     "main_check": "<a[^>]*href=[^>]*aria-label=\"Next\">",
