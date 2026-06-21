@@ -1,22 +1,53 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import dataStore from "$lib/data_store";
+  import { invoke } from "@tauri-apps/api/core";
+
+  $: rules_path = "";
+  $: site_parser_rules_path = "";
+
+  onMount(async () => {
+    let temp_rules_path = await dataStore.get("set_rules_path");
+    let temp_site_parser_rules_path = await dataStore.get(
+      "set_site_parser_rules_path",
+    );
+    if (typeof temp_rules_path === "string") {
+      rules_path = temp_rules_path;
+      invoke("set_rules_path", {
+        path: temp_rules_path,
+      });
+    }
+
+    if (typeof temp_site_parser_rules_path === "string") {
+      site_parser_rules_path = temp_site_parser_rules_path;
+      invoke("set_site_parser_rules_path", {
+        path: temp_site_parser_rules_path,
+      });
+    }
+  });
+</script>
+
 <div class="panel-section">
   <div class="section-head">
     <span class="section-label">config files</span>
   </div>
   <div class="config-fields">
     <label>
-      <span class="field-label">threads config path</span>
+      <span class="field-label">rules config path</span>
       <input
         type="text"
         id="cfgThreads"
         placeholder="/etc/scraper/threads.json"
+        bind:value={rules_path}
       />
     </label>
     <label>
-      <span class="field-label">output config path</span>
+      <span class="field-label">site parser config path</span>
       <input
         type="text"
         id="cfgOutput"
         placeholder="/var/data/scraper/output.json"
+        bind:value={site_parser_rules_path}
       />
     </label>
   </div>

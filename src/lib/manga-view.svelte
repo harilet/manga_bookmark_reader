@@ -1,27 +1,87 @@
-<div class="card synced">
+<script lang="ts">
+  import dataStore from "./data_store";
+  import { open } from "@tauri-apps/plugin-shell";
+
+  export let mangaData: any;
+
+  function getMangaHost() {
+    let url = mangaData["url"];
+    let host = url.split("/")[2];
+    host = host.replace("www.", "");
+    host = host.split(".")[0];
+    return host;
+  }
+
+  function getStatusClass() {
+    if (mangaData["error"]) {
+      return "error";
+    }
+    return "synced";
+  }
+
+  function openUrl() {
+    open(mangaData["url"]);
+  }
+
+  async function setClasses() {
+    if (await dataStore.get(getUrlWithoutChapter())) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function getUrlWithoutChapter() {
+    return mangaData["url"].split("/").slice(0, -1).join("/");
+  }
+</script>
+
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="card {getStatusClass()}" on:click={openUrl}>
   <div class="card-top">
-    <div class="hex">88</div>
-    <div class="title">Archmage Curriculum — chapter 27</div>
+    <div class="hex">{mangaData["index"]}</div>
+    <div class="title">{mangaData["name"]}</div>
   </div>
   <div class="source-row">
-    <span class="pill">vortexscans</span>
-    <span class="checks">checked <b>1</b>×</span>
+    <span class="pill">{getMangaHost()}</span>
+    <span class="checks">{getStatusClass()} <b>1</b>×</span>
   </div>
   <div class="meter">
-    <span class="tick on synced"></span><span class="tick on synced"
-    ></span><span class="tick on synced"></span><span class="tick on synced"
-    ></span><span class="tick on synced"></span><span class="tick on synced"
-    ></span><span class="tick on synced"></span><span class="tick on synced"
-    ></span><span class="tick on synced"></span><span class="tick on synced"
-    ></span><span class="tick on synced"></span><span class="tick on synced"
-    ></span><span class="tick on synced"></span><span class="tick on synced"
-    ></span><span class="tick on synced"></span><span class="tick on synced"
+    <span class="tick on {getStatusClass()}"></span><span
+      class="tick on {getStatusClass()}"
+    ></span><span class="tick on {getStatusClass()}"></span><span
+      class="tick on {getStatusClass()}"
+    ></span><span class="tick on {getStatusClass()}"></span><span
+      class="tick on {getStatusClass()}"
+    ></span><span class="tick on {getStatusClass()}"></span><span
+      class="tick on {getStatusClass()}"
+    ></span><span class="tick on {getStatusClass()}"></span><span
+      class="tick on {getStatusClass()}"
+    ></span><span class="tick on {getStatusClass()}"></span><span
+      class="tick on {getStatusClass()}"
+    ></span><span class="tick on {getStatusClass()}"></span><span
+      class="tick on {getStatusClass()}"
+    ></span><span class="tick on {getStatusClass()}"></span><span
+      class="tick on {getStatusClass()}"
     ></span>
   </div>
-  <div class="meter-row"><span>sync</span><span>100%</span></div>
+  <div class="meter-row">
+    <span>sync</span><span>
+      {#if mangaData["total_chapters"] > 0}
+        {Math.round(
+          ((mangaData["total_chapters"] - mangaData["remaining_chapters"]) /
+            mangaData["total_chapters"]) *
+            100,
+        )}%
+      {/if}</span
+    >
+  </div>
   <div class="foot">
-    <span class="date">23-05-2026</span>
-    <span class="status synced"><span class="dot"></span>synced</span>
+    <span class="date">{mangaData["date_time"]}</span>
+    <span class="status {getStatusClass()}"
+      ><span class="dot"></span>{getStatusClass()}</span
+    >
   </div>
 </div>
 

@@ -1,6 +1,10 @@
 <script lang="ts">
+  import type { ChangeEventHandler } from "svelte/elements";
+
   export let placeholder: string = "";
-  export let value: string = "";
+  export let value: any = "";
+  export let onChange: ChangeEventHandler<HTMLInputElement> | undefined | null =
+    null;
 </script>
 
 <div class="search">
@@ -15,7 +19,13 @@
     <slot />
   </svg>
 
-  <input type="text" id="search" {placeholder} bind:value={value} />
+  <input
+    type="text"
+    id="search"
+    {placeholder}
+    bind:value
+    on:change={onChange}
+  />
 </div>
 
 <style>
