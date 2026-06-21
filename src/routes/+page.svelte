@@ -31,11 +31,11 @@
         return true;
       }
 
-      if (selected === "no_error" && x["error"]) {
-        return false;
+      if (selected !== "no_error" && x["error"]) {
+        return true;
       }
 
-      if (selected !== "no_error" && x["error"]) {
+      if (selected === "no_error" && x["error"]) {
         return false;
       }
 
@@ -334,9 +334,11 @@
   </div>
 
   <div class="manga-area">
-    {#each mangaFinal as manga}
-      <MangaView mangaData={manga} />
-    {/each}
+    {#key mangaFinal}
+      {#each mangaFinal as manga}
+        <MangaView mangaData={manga} />
+      {/each}
+    {/key}
   </div>
 </div>
 
@@ -373,7 +375,7 @@
     transition: background 0.15s ease;
   }
   .fetch:hover {
-    background: rgba(61, 220, 132, 0.22);
+    background: var(--panel-soft);
   }
 
   .pulse {
