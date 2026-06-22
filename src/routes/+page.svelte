@@ -198,7 +198,7 @@
     root.style.setProperty(`--panel`, hslToHex(h, Math.max(10, s * 0.2), 6));
     root.style.setProperty(
       `--panel-soft`,
-      hslToHex(h, Math.max(12, s * 0.25), 9),
+      hslToHex(h, Math.max(12, s * 0.25), 20),
     );
     root.style.setProperty(`--border-dim`, `rgba(${r},${g},${b},0.14)`);
     root.style.setProperty(`--border-mid`, `rgba(${r},${g},${b},0.32)`);
@@ -206,10 +206,10 @@
     root.style.setProperty(`--signal-soft`, `rgba(${r},${g},${b},0.12)`);
     root.style.setProperty(`--amber`, "#f5a623");
     root.style.setProperty(`--fault`, "#ff5c5c");
-    root.style.setProperty(`--ink`, hslToHex(h, Math.min(40, s * 0.4), 93));
+    root.style.setProperty(`--ink`, hslToHex(h, Math.min(40, s * 0.4), 100));
     root.style.setProperty(
       `--ink-muted`,
-      hslToHex(h, Math.min(25, s * 0.25), 48),
+      hslToHex(h, Math.min(25, s * 0.25), 50),
     );
     root.style.setProperty(
       `--ink-dim`,

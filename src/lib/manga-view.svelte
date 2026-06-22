@@ -44,6 +44,13 @@
   function getUrlWithoutChapter() {
     return mangaData["url"].split("/").slice(0, -1).join("/");
   }
+
+  function progress() {
+    return (
+      (mangaData["total_chapters"] - mangaData["remaining_chapters"]) /
+      mangaData["total_chapters"]
+    );
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -51,21 +58,27 @@
 <div class="card {getStatusClass()}" on:click={openUrl}>
   <div class="card-top">
     <div class="hex">{mangaData["index"]}</div>
-    <div class="title">{mangaData["name"]}</div>
+    <div class="title" style="{mangaData["error"]?"color: var(--fault)":""}">{mangaData["name"]}</div>
   </div>
   <div class="source-row">
     <span class="pill">{getMangaHost()}</span>
   </div>
+  <div class="meter">
+    {#each { length: 16 } as _, i}
+      <span class="tick {i < progress() * 16 ? 'on' : ''} {getStatusClass()}">
+      </span>
+    {/each}
+  </div>
   <div class="meter-row">
     <span>
       {#if mangaData["total_chapters"] > 0}
-        {Math.round(
-          ((mangaData["total_chapters"] - mangaData["remaining_chapters"]) /
-            mangaData["total_chapters"]) *
-            100,
-        )}%
-      {/if}</span
-    >
+        {Math.round(progress() * 100)}%
+      {/if}
+    </span>
+
+    <span>
+      {mangaData["remaining_chapters"]}/{mangaData["total_chapters"]}
+    </span>
   </div>
   <div class="foot">
     <span class="date">{mangaData["date_time"]}</span>
