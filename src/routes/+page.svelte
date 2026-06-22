@@ -276,10 +276,6 @@
       <div class="panel-section">
         <div class="section-head">
           <span class="section-label">by source</span>
-          <div class="sources-actions">
-            <button class="mini-btn" id="selectAll">select all</button>
-            <button class="mini-btn" id="clearAll">clear all</button>
-          </div>
         </div>
         <div class="chips" id="chips">
           {#key mangaFinal}

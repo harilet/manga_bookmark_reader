@@ -1,8 +1,15 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import dataStore from "./data_store";
   import { open } from "@tauri-apps/plugin-shell";
 
   export let mangaData: any;
+
+  $: warning = false;
+
+  onMount(() => {
+    setClasses();
+  });
 
   function getMangaHost() {
     let url = mangaData["url"];
@@ -16,6 +23,9 @@
     if (mangaData["error"]) {
       return "error";
     }
+    if (warning) {
+      return "warning";
+    }
     return "synced";
   }
 
@@ -25,9 +35,9 @@
 
   async function setClasses() {
     if (await dataStore.get(getUrlWithoutChapter())) {
-      return true;
+      warning = true;
     } else {
-      return false;
+      warning = false;
     }
   }
 
@@ -45,29 +55,9 @@
   </div>
   <div class="source-row">
     <span class="pill">{getMangaHost()}</span>
-    <span class="checks">{getStatusClass()} <b>1</b>×</span>
-  </div>
-  <div class="meter">
-    <span class="tick on {getStatusClass()}"></span><span
-      class="tick on {getStatusClass()}"
-    ></span><span class="tick on {getStatusClass()}"></span><span
-      class="tick on {getStatusClass()}"
-    ></span><span class="tick on {getStatusClass()}"></span><span
-      class="tick on {getStatusClass()}"
-    ></span><span class="tick on {getStatusClass()}"></span><span
-      class="tick on {getStatusClass()}"
-    ></span><span class="tick on {getStatusClass()}"></span><span
-      class="tick on {getStatusClass()}"
-    ></span><span class="tick on {getStatusClass()}"></span><span
-      class="tick on {getStatusClass()}"
-    ></span><span class="tick on {getStatusClass()}"></span><span
-      class="tick on {getStatusClass()}"
-    ></span><span class="tick on {getStatusClass()}"></span><span
-      class="tick on {getStatusClass()}"
-    ></span>
   </div>
   <div class="meter-row">
-    <span>sync</span><span>
+    <span>
       {#if mangaData["total_chapters"] > 0}
         {Math.round(
           ((mangaData["total_chapters"] - mangaData["remaining_chapters"]) /
@@ -112,7 +102,7 @@
     border-left-color: var(--amber);
   }
   .card.error {
-    border-left-color: var(--fault);
+    border-color: var(--fault);
   }
   .card.queued {
     border-left-color: var(--ink-muted);
