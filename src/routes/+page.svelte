@@ -47,6 +47,10 @@
         return a["index"] - b["index"];
       } else if (sort == "remaining") {
         return a["remaining_chapters"] - b["remaining_chapters"];
+      } else if (sort == "name") {
+        return a["name"] - b["name"];
+      }else if (sort == "name-length") {
+        return a["name"].length - b["name"].length;
       }
       return 0;
     });
@@ -80,7 +84,6 @@
           disabled = true;
           totalSize = data["size"];
           list = [];
-          sort = "default";
         } else if (data["name"]) {
           list = [...list, data];
         }
@@ -247,6 +250,8 @@
         <option value="default">Default</option>
         <option value="index">Index</option>
         <option value="remaining">Remaining</option>
+        <option value="name">Name</option>
+        <option value="name-length">Name Length</option>
       </select>
 
       <button

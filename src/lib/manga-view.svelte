@@ -150,7 +150,6 @@
     font-weight: 500;
     color: var(--ink);
     display: -webkit-box;
-    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -171,10 +170,6 @@
   }
   .checks {
     color: var(--ink-dim);
-  }
-  .checks b {
-    color: var(--ink-muted);
-    font-weight: 500;
   }
 
   .meter {
