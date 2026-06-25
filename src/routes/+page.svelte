@@ -8,6 +8,7 @@
   import ConfigFilesView from "$lib/config-files-view.svelte";
   import MangaView from "$lib/manga-view.svelte";
   import ThreadConfigView from "$lib/thread-config-view.svelte";
+  import Settings from "$lib/icons/settings.svelte";
 
   let disabled = false;
   let totalSize = 0;
@@ -18,6 +19,7 @@
   $: searchValue = "";
   let ignoreHosts: string[] = [];
   let color = "#3ddc84";
+  let showfilters = false;
 
   $: {
     let mangaFiltered = list.filter((x) => {
@@ -49,7 +51,7 @@
         return a["remaining_chapters"] - b["remaining_chapters"];
       } else if (sort == "name") {
         return a["name"] - b["name"];
-      }else if (sort == "name-length") {
+      } else if (sort == "name-length") {
         return a["name"].length - b["name"].length;
       }
       return 0;
@@ -265,18 +267,19 @@
         {/if}
         fetch now
       </button>
+
+      <button
+        class="fetch"
+        style="margin: 10px; padding-top: 0px; padding-bottom: 0px;"
+        on:click={(_) => (showfilters = !showfilters)}
+      >
+        <Settings />
+      </button>
     </div>
   </Titlebar>
 </div>
 <div class="app">
-  <details class="panel">
-    <summary>
-      <span class="l">filters &amp; config</span>
-      <span class="right"
-        ><span class="badge" id="sourcesBadge"></span><span class="chev">▸</span
-        ></span
-      >
-    </summary>
+  <div class="panel" style={showfilters ? "" : "display: none;"}>
     <div class="panel-body">
       <div class="panel-section">
         <div class="section-head">
@@ -316,7 +319,7 @@
         on:change={(_) => changeColor()}
       />
     </div>
-  </details>
+  </div>
   <div class="overall">
     <div class="overall-head">
       <span class="overall-label"
@@ -397,52 +400,15 @@
     }
   }
 
-  details.panel {
+  div.panel {
     background: var(--panel);
     border: 1px solid var(--border-dim);
     border-radius: 8px;
     margin-bottom: 14px;
   }
-  details.panel summary {
-    cursor: pointer;
-    list-style: none;
-    padding: 12px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  details.panel summary::-webkit-details-marker {
-    display: none;
-  }
-  details.panel summary .l {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-dim);
-  }
-  details.panel summary .right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  details.panel summary .badge {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--ink-muted);
-  }
-  details.panel summary .chev {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--ink-dim);
-    transition: transform 0.15s ease;
-  }
-  details.panel[open] summary .chev {
-    transform: rotate(90deg);
-  }
-  details.panel .panel-body {
-    padding: 0 16px 16px;
+
+  div.panel .panel-body {
+    padding: 16px;
   }
   .panel-section .section-head {
     display: flex;
@@ -462,20 +428,7 @@
     background: var(--border-dim);
     margin: 14px 0;
   }
-  .mini-btn {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--ink-muted);
-    background: none;
-    border: 1px solid var(--border-dim);
-    padding: 5px 11px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  .mini-btn:hover {
-    color: var(--ink);
-    border-color: var(--border-mid);
-  }
+
   .chips {
     display: flex;
     flex-wrap: wrap;
