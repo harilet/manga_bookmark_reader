@@ -1,6 +1,6 @@
 {
   "productName": "manga_bookmark_reader",
-  "version": "0.1.9",
+  "version": "0.1.12",
   "identifier": "com.manga-bookmark-reader.app",
   "build": {
     "beforeDevCommand": "npm run dev",
