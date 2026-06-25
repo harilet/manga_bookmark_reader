@@ -90,7 +90,7 @@
 
 <style>
   .card {
-    background: var(--panel);
+    background: var(--void);
     border: 1px solid var(--border-dim);
     border-left: 3px solid var(--ink-dim);
     border-radius: 0 8px 8px 0;

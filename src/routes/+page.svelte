@@ -203,7 +203,7 @@
     root.style.setProperty(`--panel`, hslToHex(h, Math.max(10, s * 0.2), 6));
     root.style.setProperty(
       `--panel-soft`,
-      hslToHex(h, Math.max(12, s * 0.25), 20),
+      hslToHex(h, Math.max(12, s * 0.25), 10),
     );
     root.style.setProperty(`--border-dim`, `rgba(${r},${g},${b},0.14)`);
     root.style.setProperty(`--border-mid`, `rgba(${r},${g},${b},0.32)`);
@@ -226,13 +226,17 @@
     await dataStore.set("primary-color", color);
     generateTheme(color);
   }
+
+  async function onThreadCountChange(data: any) {
+    searchValue = data.target.value;
+  }
 </script>
 
 <div data-tauri-drag-region class="app-bar">
   <Titlebar>
     <div class="top-level-filter">
       <div style="margin: 10px">
-        <Cinput placeholder="search threads…" value={searchValue}>
+        <Cinput placeholder="search threads…" value={searchValue} onChange={onThreadCountChange}>
           <circle cx="11" cy="11" r="7" /><line
             x1="21"
             y1="21"
@@ -241,6 +245,14 @@
           />
         </Cinput>
       </div>
+
+      <button
+        class="fetch"
+        style="margin: 10px; padding-top: 0px; padding-bottom: 0px;"
+        on:click={(_) => (showfilters = !showfilters)}
+      >
+        <Settings />
+      </button>
 
       <select class="filter" bind:value={selected} style="margin: 10px">
         <option value="remaining">Remaining</option>
@@ -266,14 +278,6 @@
           <span class="pulse"></span>
         {/if}
         fetch now
-      </button>
-
-      <button
-        class="fetch"
-        style="margin: 10px; padding-top: 0px; padding-bottom: 0px;"
-        on:click={(_) => (showfilters = !showfilters)}
-      >
-        <Settings />
       </button>
     </div>
   </Titlebar>
@@ -322,12 +326,12 @@
   </div>
   <div class="overall">
     <div class="overall-head">
-      <span class="overall-label"
-        >{list.length} : {mangaFinal.length} of {totalSize}</span
-      >
-      <span class="overall-pct" id="overallPct"
-        >{Math.ceil((list.length / totalSize) * 100)}%</span
-      >
+      <span class="overall-label">
+        {mangaFinal.length} : {list.length} of {totalSize}
+      </span>
+      <span class="overall-pct" id="overallPct">
+        {Math.ceil((list.length / totalSize) * 100)}%
+      </span>
     </div>
     <div class="overall-meter" id="overallMeter">
       {#each { length: 20 } as _, i}
