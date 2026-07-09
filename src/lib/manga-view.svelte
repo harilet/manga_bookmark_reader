@@ -51,42 +51,66 @@
       mangaData["total_chapters"]
     );
   }
+
+  async function setWarning() {
+    if (await dataStore.get(getUrlWithoutChapter())) {
+      dataStore.delete(getUrlWithoutChapter());
+      warning = false;
+    } else {
+      dataStore.set(getUrlWithoutChapter(), 1);
+      warning = true;
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="card {getStatusClass()}" on:click={openUrl}>
-  <div class="card-top">
-    <div class="hex">{mangaData["index"]}</div>
-    <div class="title" style="{mangaData["error"]?"color: var(--fault)":""}">{mangaData["name"]}</div>
-  </div>
-  <div class="source-row">
-    <span class="pill">{getMangaHost()}</span>
-  </div>
-  <div class="meter">
-    {#each { length: 16 } as _, i}
-      <span class="tick {i < progress() * 16 ? 'on' : ''} {getStatusClass()}">
-      </span>
-    {/each}
-  </div>
-  <div class="meter-row">
-    <span>
-      {#if mangaData["total_chapters"] > 0}
-        {Math.round(progress() * 100)}%
+{#key warning}
+  <div class="card {getStatusClass()}" on:click={openUrl}>
+    <div class="card-top">
+      <div class="hex">{mangaData["index"]}</div>
+      <div class="title {getStatusClass()}">
+        {mangaData["name"]}
+      </div>
+      <div>
+        <button class="btn" on:click|preventDefault|stopPropagation={setWarning}
+        ></button>
+      </div>
+    </div>
+    <div class="source-row">
+      <span class="pill">{getMangaHost()}</span>
+    </div>
+    <div class="meter">
+      {#if mangaData["total_chapters"] == 1}
+        <span class="tick {getStatusClass()}"> </span>
+      {:else}
+        {#each { length: 101 } as _, i}
+          <span
+            class="tick {i < progress() * 100 ? 'on' : ''} {getStatusClass()}"
+          >
+          </span>
+        {/each}
       {/if}
-    </span>
+    </div>
+    <div class="meter-row">
+      <span>
+        {#if mangaData["total_chapters"] > 0}
+          {Math.round(progress() * 100)}%
+        {/if}
+      </span>
 
-    <span>
-      {mangaData["remaining_chapters"]}/{mangaData["total_chapters"]}
-    </span>
+      <span>
+        {mangaData["remaining_chapters"]}/{mangaData["total_chapters"]}
+      </span>
+    </div>
+    <div class="foot">
+      <span class="date">{mangaData["date_time"]}</span>
+      <span class="status {getStatusClass()}"
+        ><span class="dot"></span>{getStatusClass()}</span
+      >
+    </div>
   </div>
-  <div class="foot">
-    <span class="date">{mangaData["date_time"]}</span>
-    <span class="status {getStatusClass()}"
-      ><span class="dot"></span>{getStatusClass()}</span
-    >
-  </div>
-</div>
+{/key}
 
 <style>
   .card {
@@ -110,12 +134,15 @@
   }
   .card.synced {
     border-left-color: var(--signal);
+    color: var(--ink);
   }
-  .card.syncing {
+  .card.warning {
     border-left-color: var(--amber);
+    color: var(--amber);
   }
   .card.error {
-    border-color: var(--fault);
+    border-left-color: var(--fault);
+    color: var(--fault);
   }
   .card.queued {
     border-left-color: var(--ink-muted);
@@ -139,7 +166,7 @@
     justify-content: center;
     font-family: var(--mono);
     font-size: 11px;
-    color: var(--ink-muted);
+    /* color: var(--ink-muted); */
   }
   .title {
     flex: 1;
@@ -148,10 +175,20 @@
     font-size: 13.5px;
     line-height: 1.45;
     font-weight: 500;
-    color: var(--ink);
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .title.synced {
+    color: var(--ink);
+  }
+
+  .title.warning {
+    color: var(--amber);
+  }
+  .title.error {
+    color: var(--fault);
   }
 
   .source-row {
@@ -164,7 +201,6 @@
   .pill {
     background: var(--panel-soft);
     border: 1px solid var(--border-dim);
-    color: var(--ink-muted);
     padding: 3px 9px;
     border-radius: 10px;
   }
@@ -185,21 +221,21 @@
   .tick.on.synced {
     background: var(--signal);
   }
-  .tick.on.syncing {
+  .tick.on.warning {
     background: var(--amber);
   }
-  .tick.on.error {
+  .tick.error {
     background: var(--fault);
   }
   .tick.on.queued {
     background: var(--ink-muted);
   }
+
   .meter-row {
     display: flex;
     justify-content: space-between;
     font-family: var(--mono);
     font-size: 10.5px;
-    color: var(--ink-muted);
   }
 
   .foot {
@@ -249,5 +285,22 @@
   }
   .status.queued .dot {
     background: var(--ink-muted);
+  }
+
+  .btn {
+    background: var(--signal-soft);
+    border: 1px solid var(--signal);
+    color: var(--signal);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 9px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s ease;
   }
 </style>

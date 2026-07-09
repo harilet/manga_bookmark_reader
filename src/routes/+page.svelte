@@ -232,11 +232,15 @@
   }
 </script>
 
-<div data-tauri-drag-region class="app-bar">
+<div class="app-bar">
   <Titlebar>
     <div class="top-level-filter">
       <div style="margin: 10px">
-        <Cinput placeholder="search threads…" value={searchValue} onChange={onThreadCountChange}>
+        <Cinput
+          placeholder="search threads…"
+          value={searchValue}
+          onChange={onThreadCountChange}
+        >
           <circle cx="11" cy="11" r="7" /><line
             x1="21"
             y1="21"
@@ -334,8 +338,8 @@
       </span>
     </div>
     <div class="overall-meter" id="overallMeter">
-      {#each { length: 20 } as _, i}
-        <span class="tick {i < (list.length / totalSize) * 20 ? 'on' : ''}"
+      {#each { length: 200 } as _, i}
+        <span class="tick {i < (list.length / totalSize) * 200 ? 'on' : ''}"
         ></span>
       {/each}
     </div>

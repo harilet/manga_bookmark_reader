@@ -1,6 +1,6 @@
 {
   "productName": "manga_bookmark_reader",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "identifier": "com.manga-bookmark-reader.app",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -15,8 +15,8 @@
         "width": 1000,
         "height": 600,
         "decorations": false,
-        "transparent": true,
-        "shadow": false
+        "shadow": false,
+        "resizable": true
       }
     ],
     "security": {

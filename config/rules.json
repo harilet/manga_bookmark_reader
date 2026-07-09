@@ -118,5 +118,13 @@
       "comix.to"
     ],
     "type": "static"
+  },
+  {
+    "site_match": [
+      "en-thunderscans"
+    ],
+    "type": "inverse_toggle",
+    "page_check": "\"prevUrl\":\"",
+    "main_check": "\"nextUrl\":\"\""
   }
 ]
