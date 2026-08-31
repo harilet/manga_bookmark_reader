@@ -25,8 +25,9 @@
   },
   {
     "site_match": [
-      "likemanga",
-      "mangayy"
+      "mangayy",
+"mangasushi",
+"ksgroupscans"
     ],
     "page_check": "btn prev_page",
     "main_check": "next_page",
@@ -84,8 +85,8 @@
     "site_match": [
       "mangablaze"
     ],
-    "page_check": "<div class=\"nav-previous",
-    "main_check": "nav-next  free-chap",
+    "page_check": "",
+    "main_check": "Next chapter",
     "type": "toggle"
   },
   {
@@ -110,7 +111,7 @@
       "asmotoon"
     ],
     "type": "toggle",
-    "page_check": "aria-label=\"Next\"",
+    "page_check": "arrow-left.svg",
     "main_check": "Next chapter"
   },
   {
@@ -121,10 +122,27 @@
   },
   {
     "site_match": [
-      "en-thunderscans"
+      "en-thunderscans",
+"madarascans"
     ],
     "type": "inverse_toggle",
     "page_check": "\"prevUrl\":\"",
     "main_check": "\"nextUrl\":\"\""
+  },
+  {
+    "site_match": [
+      "likemanga"
+    ],
+    "type": "inverse_toggle",
+    "page_check": "a_next",
+    "main_check": "disabled"
+  },
+  {
+    "site_match": [
+      "mangakatana"
+    ],
+    "type": "inverse_toggle",
+    "page_check": "nav_button next",
+    "main_check": "nav_button next\"[^>]disabled=\"disabled\">"
   }
 ]

@@ -20,6 +20,9 @@
   }
 
   function getStatusClass() {
+    if(mangaData["remaining_chapters"] <= 0) {
+      return "queued";
+    }
     if (mangaData["error"]) {
       return "error";
     }
@@ -146,6 +149,7 @@
   }
   .card.queued {
     border-left-color: var(--ink-muted);
+    color: var(--ink-muted);
   }
 
   .card-top {
