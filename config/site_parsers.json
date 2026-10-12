@@ -8,12 +8,6 @@
       "order": "descending"
     },
     {
-      "name": "demonicscans",
-      "type": "html_select",
-      "selector": "<select style=\"margin-right:10px;margin-left:10px;font-size:17px;max-width: 100%;\" onchange=\"location",
-      "offset": 16
-    },
-    {
       "name": "mgeko",
       "type": "html_select",
       "selector": "<select name=\"cars\" id=\"cars\" style=\"width: 100px;margin-right:10px\" onchange=\"location = this.value;\">",

@@ -63,7 +63,7 @@
     ],
     "page_check": "prevchap",
     "main_check": "nextchap",
-    "type": "auto"
+    "type": "toggle"
   },
   {
     "site_match": [
@@ -104,7 +104,7 @@
     ],
     "page_check": "aria-label=\"Next\"",
     "main_check": "<a[^>]*href=[^>]*aria-label=\"Next\">",
-    "type": "toggle"
+    "type": "inverse_toggle"
   },
   {
     "site_match": [
