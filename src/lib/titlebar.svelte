@@ -16,14 +16,17 @@
   }
 </script>
 
-<div data-tauri-drag-region class="title-bar" style="display: flex;">
+<div data-tauri-drag-region class="title-bar">
+  <div class="brand">
+    <span class="brand-mark">M</span>
+    <span class="brand-name">manga<b>reader</b></span>
+  </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div>
+  <div class="title-slot">
     <slot />
   </div>
-  <div class="tabs"></div>
-  <div class="window-controls" style="display: flex;">
+  <div class="window-controls">
     <button class="hvrBgDark" on:click={onClickReduce}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -79,47 +82,94 @@
 </div>
 
 <style>
-  .window-controls {
-    display: flex;
-  }
-
-  .tabs {
-    display: flex;
-    color: var(--signal);
-    background: var(--signal-soft);
-  }
-
   .title-bar {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    height: 52px;
+    padding-left: 22px;
+    border-bottom: 1px solid var(--border-dim);
+    background: var(--void);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 22px;
+    flex: none;
+  }
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: var(--signal);
+    color: #05070c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .brand-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .brand-name b {
+    color: var(--ink-muted);
+    font-weight: 500;
+  }
+
+  .title-slot {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .window-controls {
+    display: flex;
+    margin-left: auto;
     height: 100%;
   }
 
   .hvrBgDark {
-    width: 42px;
+    width: 44px;
     border: none;
     background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    fill: var(--signal);
+    fill: var(--ink-muted);
+    transition:
+      background 0.15s ease,
+      fill 0.15s ease;
   }
 
   .hvrBgDark:hover {
-    background: #8585853b;
+    background: rgba(255, 255, 255, 0.06);
+    fill: var(--ink);
   }
 
   .btn-close {
-    width: 45px;
+    width: 46px;
     background: transparent;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    fill: var(--signal);
+    fill: var(--ink-muted);
+    transition:
+      background 0.15s ease,
+      fill 0.15s ease;
   }
 
   .btn-close:hover {
     background: rgb(220 38 38);
+    fill: #ffffff;
   }
 </style>

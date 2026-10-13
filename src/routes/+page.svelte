@@ -18,7 +18,7 @@
   let mangaFinal: any[];
   $: searchValue = "";
   let ignoreHosts: string[] = [];
-  let color = "#3ddc84";
+  let color = "#4f7cff";
   let showfilters = false;
 
   $: {
@@ -123,103 +123,15 @@
   }
 
   function generateTheme(primaryHex: string) {
-    // Convert hex -> RGB
     const hex = primaryHex.replace("#", "");
     const r = parseInt(hex.slice(0, 2), 16);
     const g = parseInt(hex.slice(2, 4), 16);
     const b = parseInt(hex.slice(4, 6), 16);
 
-    // RGB -> HSL
-    function rgbToHsl(r: number, g: number, b: number) {
-      r /= 255;
-      g /= 255;
-      b /= 255;
-
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-
-      let h = (max + min) / 2;
-      let s = (max + min) / 2;
-      let l = (max + min) / 2;
-
-      if (max === min) {
-        h = s = 0;
-      } else {
-        const d = max - min;
-
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-
-        switch (max) {
-          case r:
-            h = (g - b) / d + (g < b ? 6 : 0);
-            break;
-          case g:
-            h = (b - r) / d + 2;
-            break;
-          case b:
-            h = (r - g) / d + 4;
-            break;
-        }
-
-        h /= 6;
-      }
-
-      return [h * 360, s * 100, l * 100];
-    }
-
-    // HSL -> HEX
-    function hslToHex(h: number, s: number, l: number) {
-      s /= 100;
-      l /= 100;
-
-      const c = (1 - Math.abs(2 * l - 1)) * s;
-      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-      const m = l - c / 2;
-
-      let r = 0,
-        g = 0,
-        b = 0;
-
-      if (h < 60) [r, g, b] = [c, x, 0];
-      else if (h < 120) [r, g, b] = [x, c, 0];
-      else if (h < 180) [r, g, b] = [0, c, x];
-      else if (h < 240) [r, g, b] = [0, x, c];
-      else if (h < 300) [r, g, b] = [x, 0, c];
-      else [r, g, b] = [c, 0, x];
-
-      const toHex = (n: number) =>
-        Math.round((n + m) * 255)
-          .toString(16)
-          .padStart(2, "0");
-
-      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-    }
-
-    const [h, s] = rgbToHsl(r, g, b);
-
     const root = document.documentElement;
 
-    root.style.setProperty(`--void`, hslToHex(h, Math.max(8, s * 0.15), 3));
-    root.style.setProperty(`--panel`, hslToHex(h, Math.max(10, s * 0.2), 6));
-    root.style.setProperty(
-      `--panel-soft`,
-      hslToHex(h, Math.max(12, s * 0.25), 10),
-    );
-    root.style.setProperty(`--border-dim`, `rgba(${r},${g},${b},0.14)`);
-    root.style.setProperty(`--border-mid`, `rgba(${r},${g},${b},0.32)`);
     root.style.setProperty(`--signal`, primaryHex);
     root.style.setProperty(`--signal-soft`, `rgba(${r},${g},${b},0.12)`);
-    root.style.setProperty(`--amber`, "#f5a623");
-    root.style.setProperty(`--fault`, "#ff5c5c");
-    root.style.setProperty(`--ink`, hslToHex(h, Math.min(40, s * 0.4), 100));
-    root.style.setProperty(
-      `--ink-muted`,
-      hslToHex(h, Math.min(25, s * 0.25), 50),
-    );
-    root.style.setProperty(
-      `--ink-dim`,
-      hslToHex(h, Math.min(18, s * 0.18), 23),
-    );
   }
 
   async function changeColor() {
@@ -235,7 +147,7 @@
 <div class="app-bar">
   <Titlebar>
     <div class="top-level-filter">
-      <div style="margin: 10px">
+      <div class="field">
         <Cinput
           placeholder="search threads…"
           value={searchValue}
@@ -251,20 +163,21 @@
       </div>
 
       <button
-        class="fetch"
-        style="margin: 10px; padding-top: 0px; padding-bottom: 0px;"
+        class="icon-btn"
+        class:active={showfilters}
+        aria-label="toggle filters"
         on:click={(_) => (showfilters = !showfilters)}
       >
         <Settings />
       </button>
 
-      <select class="filter" bind:value={selected} style="margin: 10px">
+      <select class="filter" bind:value={selected}>
         <option value="remaining">Remaining</option>
         <option value="all">Show All</option>
         <option value="no_error">No Error</option>
       </select>
 
-      <select class="filter" bind:value={sort} style="margin: 10px">
+      <select class="filter" bind:value={sort}>
         <option value="default">Default</option>
         <option value="index">Index</option>
         <option value="remaining">Remaining</option>
@@ -272,12 +185,7 @@
         <option value="name-length">Name Length</option>
       </select>
 
-      <button
-        class="fetch"
-        on:click={eventEmit}
-        {disabled}
-        style="margin: 10px"
-      >
+      <button class="fetch primary" on:click={eventEmit} {disabled}>
         {#if !disabled}
           <span class="pulse"></span>
         {/if}
@@ -330,9 +238,7 @@
   </div>
   <div class="overall">
     <div class="overall-head">
-      <span class="overall-label">
-        {mangaFinal.length} : {list.length} of {totalSize}
-      </span>
+      <span class="overall-label">01 / library</span>
       <span class="overall-pct" id="overallPct">
         {Math.ceil((list.length / totalSize) * 100)}%
       </span>
@@ -343,9 +249,18 @@
         ></span>
       {/each}
     </div>
+    <div class="overall-foot">
+      <span>{mangaFinal.length} shown</span>
+      <span>{list.length} of {totalSize} scanned</span>
+    </div>
   </div>
 
-  <div class="manga-area">
+  <div class="section-bar">
+    <span class="section-label">02 / lineup</span>
+    <span class="section-meta">pick a title to open</span>
+  </div>
+
+  <div class="manga-area main-scrollbar">
     {#key mangaFinal}
       {#each mangaFinal as manga}
         <MangaView mangaData={manga} />
@@ -357,37 +272,86 @@
 <style>
   .app-bar {
     width: 100%;
+    flex: none;
   }
 
   .app {
     width: 100%;
     display: flex;
     flex-direction: column;
-    height: calc(100% - 55px);
+    height: calc(100% - 53px);
+    padding: 0 26px;
+    border-left: 1px solid var(--border-dim);
+    border-right: 1px solid var(--border-dim);
   }
 
   .top-level-filter {
     display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 100%;
+  }
+  .top-level-filter .field {
+    display: flex;
   }
 
   .fetch {
-    background: var(--signal-soft);
-    border: 1px solid var(--signal);
-    color: var(--signal);
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     padding: 9px 16px;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: background 0.15s ease;
+    background: transparent;
+    border: 1px solid var(--border-mid);
+    color: var(--ink);
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
   }
   .fetch:hover {
     background: var(--panel-soft);
+    border-color: var(--ink-muted);
+  }
+
+  .fetch.primary {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #05070c;
+  }
+  .fetch.primary:hover {
+    background: #ffffff;
+    border-color: #ffffff;
+  }
+  .fetch.primary .pulse {
+    background: #05070c;
+  }
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 37px;
+    height: 35px;
+    flex: none;
+    background: transparent;
+    border: 1px solid var(--border-mid);
+    border-radius: 4px;
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .icon-btn:hover,
+  .icon-btn.active {
+    background: var(--panel-soft);
+    border-color: var(--ink-muted);
   }
 
   .pulse {
@@ -411,30 +375,30 @@
   div.panel {
     background: var(--panel);
     border: 1px solid var(--border-dim);
-    border-radius: 8px;
-    margin-bottom: 14px;
+    border-radius: 6px;
+    margin: 18px 0 0;
   }
 
   div.panel .panel-body {
-    padding: 16px;
+    padding: 18px;
   }
   .panel-section .section-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
   .panel-section .section-label {
     font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--ink-dim);
+    color: var(--ink-muted);
   }
   .panel-divider {
     height: 1px;
     background: var(--border-dim);
-    margin: 14px 0;
+    margin: 16px 0;
   }
 
   .chips {
@@ -444,19 +408,23 @@
   }
   .chip {
     font-family: var(--mono);
-    font-size: 11.5px;
-    padding: 6px 18px 6px 11px;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 11px;
     background: var(--signal-soft);
     border: 1px solid var(--signal);
+    border-radius: 3px;
     color: var(--signal);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
     user-select: none;
     transition:
       opacity 0.15s ease,
-      background 0.15s ease;
+      background 0.15s ease,
+      color 0.15s ease;
   }
   .chip .count {
     color: var(--ink-muted);
@@ -473,32 +441,66 @@
     opacity: 0.85;
   }
 
+  .section-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0 14px;
+  }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .section-meta {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+
   .manga-area {
     overflow: auto;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-content: baseline;
-    padding: 10px;
-    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+    grid-auto-rows: max-content;
+    gap: 16px;
+    align-content: start;
+    padding: 0 0 22px;
+    flex: 1;
   }
 
   select.filter {
-    background: var(--panel);
-    border: 1px solid var(--border-dim);
+    background: transparent;
+    border: 1px solid var(--border-mid);
     color: var(--ink);
     font-family: var(--mono);
-    font-size: 12px;
-    padding: 9px 10px;
-    border-radius: 6px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 9px 12px;
+    border-radius: 4px;
     outline: none;
     appearance: none;
+    cursor: pointer;
+  }
+  select.filter:hover {
+    border-color: var(--ink-muted);
+  }
+  select.filter option {
+    background: var(--panel);
+    color: var(--ink);
   }
 
   .overall {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    padding: 20px 0 18px;
+    border-bottom: 1px solid var(--border-dim);
   }
 
   .overall-head {
@@ -509,29 +511,50 @@
 
   .overall-label {
     font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
+    font-size: 11px;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--ink);
+    color: var(--ink-muted);
   }
   .overall-pct {
     font-family: var(--mono);
     font-size: 13px;
     font-weight: 600;
+    letter-spacing: 0.06em;
     color: var(--signal);
   }
   .overall-meter {
     display: flex;
     gap: 2px;
-    height: 8px;
+    height: 6px;
   }
 
   .tick {
     flex: 1;
-    background: var(--ink-dim);
-    border-radius: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 0;
   }
   .tick.on {
     background: var(--signal);
+  }
+
+  .overall-foot {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+
+  input[type="color"] {
+    width: 46px;
+    height: 34px;
+    padding: 2px;
+    background: transparent;
+    border: 1px solid var(--border-mid);
+    border-radius: 4px;
+    cursor: pointer;
   }
 </style>

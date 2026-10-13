@@ -30,14 +30,19 @@
 
 <style>
   .search {
-    background: var(--panel);
-    border: 1px solid var(--border-dim);
-    border-radius: 6px;
-    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid var(--border-mid);
+    border-radius: 4px;
+    padding: 9px 12px;
     display: flex;
     align-items: center;
     gap: 8px;
-    min-width: 200px;
+    min-width: 220px;
+    transition: border-color 0.15s ease;
+  }
+
+  .search:focus-within {
+    border-color: var(--signal);
   }
 
   .search svg {
@@ -51,10 +56,14 @@
     outline: none;
     color: var(--ink);
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    width: 100%;
   }
 
   .search input::placeholder {
     color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
   }
 </style>

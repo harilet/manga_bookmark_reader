@@ -55,6 +55,11 @@
     );
   }
 
+  function progressPct() {
+    if (!mangaData["total_chapters"]) return 0;
+    return Math.min(100, Math.max(0, Math.round(progress() * 100)));
+  }
+
   async function setWarning() {
     if (await dataStore.get(getUrlWithoutChapter())) {
       dataStore.delete(getUrlWithoutChapter());
@@ -76,24 +81,19 @@
         {mangaData["name"]}
       </div>
       <div>
-        <button class="btn" on:click|preventDefault|stopPropagation={setWarning}
-        ></button>
+        <button
+          class="btn {warning ? 'on' : ''}"
+          aria-label="toggle warning"
+          title="toggle warning"
+          on:click|preventDefault|stopPropagation={setWarning}>!</button
+        >
       </div>
     </div>
     <div class="source-row">
       <span class="pill">{getMangaHost()}</span>
     </div>
-    <div class="meter">
-      {#if mangaData["total_chapters"] == 1}
-        <span class="tick {getStatusClass()}"> </span>
-      {:else}
-        {#each { length: 101 } as _, i}
-          <span
-            class="tick {i < progress() * 100 ? 'on' : ''} {getStatusClass()}"
-          >
-          </span>
-        {/each}
-      {/if}
+    <div class="bar {getStatusClass()}">
+      <span class="fill" style="width: {progressPct()}%"></span>
     </div>
     <div class="meter-row">
       <span>
@@ -117,39 +117,68 @@
 
 <style>
   .card {
-    background: var(--void);
+    position: relative;
+    background: var(--panel);
     border: 1px solid var(--border-dim);
-    border-left: 3px solid var(--ink-dim);
-    border-radius: 0 8px 8px 0;
+    border-radius: 6px;
     padding: 16px 18px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    cursor: pointer;
+    overflow: hidden;
     transition:
       border-color 0.15s ease,
       background 0.15s ease;
-    flex-grow: 1;
-    margin: 10px;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--ink-dim);
+    transition: background 0.15s ease;
   }
   .card:hover {
     border-color: var(--border-mid);
     background: var(--panel-soft);
   }
   .card.synced {
-    border-left-color: var(--signal);
     color: var(--ink);
   }
+  .card.synced::before {
+    background: var(--signal);
+  }
   .card.warning {
-    border-left-color: var(--amber);
     color: var(--amber);
+    border-color: rgba(245, 166, 35, 0.55);
+    background:
+      linear-gradient(rgba(245, 166, 35, 0.07), rgba(245, 166, 35, 0.07)),
+      var(--panel);
+  }
+  .card.warning:hover {
+    border-color: var(--amber);
+    background:
+      linear-gradient(rgba(245, 166, 35, 0.12), rgba(245, 166, 35, 0.12)),
+      var(--panel);
+  }
+  .card.warning::before {
+    background: var(--amber);
+    box-shadow: 0 0 12px rgba(245, 166, 35, 0.7);
   }
   .card.error {
-    border-left-color: var(--fault);
     color: var(--fault);
   }
+  .card.error::before {
+    background: var(--fault);
+  }
   .card.queued {
-    border-left-color: var(--ink-muted);
     color: var(--ink-muted);
+  }
+  .card.queued::before {
+    background: var(--ink-muted);
   }
 
   .card-top {
@@ -160,25 +189,26 @@
 
   .hex {
     flex: none;
-    width: 30px;
-    height: 30px;
-    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-    background: var(--panel-soft);
-    border: 1px solid var(--border-mid);
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    background: var(--signal-soft);
+    border: 1px solid var(--signal);
+    color: var(--signal);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--mono);
-    font-size: 11px;
-    /* color: var(--ink-muted); */
+    font-size: 12px;
+    font-weight: 600;
   }
   .title {
     flex: 1;
     min-width: 0;
-    font-family: var(--mono);
-    font-size: 13.5px;
-    line-height: 1.45;
-    font-weight: 500;
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.35;
+    font-weight: 600;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -200,38 +230,42 @@
     justify-content: space-between;
     align-items: center;
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 10px;
   }
   .pill {
-    background: var(--panel-soft);
+    background: transparent;
     border: 1px solid var(--border-dim);
-    padding: 3px 9px;
-    border-radius: 10px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
   }
   .checks {
     color: var(--ink-dim);
   }
 
-  .meter {
-    display: flex;
-    gap: 2px;
-    height: 9px;
+  .bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
   }
-  .tick {
-    flex: 1;
-    background: var(--ink-dim);
-    border-radius: 1px;
-  }
-  .tick.on.synced {
+  .bar .fill {
+    display: block;
+    height: 100%;
     background: var(--signal);
+    border-radius: inherit;
+    transition: width 0.3s ease;
   }
-  .tick.on.warning {
+  .bar.warning .fill {
     background: var(--amber);
   }
-  .tick.error {
+  .bar.error .fill {
     background: var(--fault);
   }
-  .tick.on.queued {
+  .bar.queued .fill {
     background: var(--ink-muted);
   }
 
@@ -240,16 +274,20 @@
     justify-content: space-between;
     font-family: var(--mono);
     font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
   }
 
   .foot {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 10px;
+    padding-top: 12px;
     border-top: 1px solid var(--border-dim);
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
   .date {
     color: var(--ink-dim);
@@ -270,6 +308,12 @@
   }
   .status.synced .dot {
     background: var(--signal);
+  }
+  .status.warning {
+    color: var(--amber);
+  }
+  .status.warning .dot {
+    background: var(--amber);
   }
   .status.syncing {
     color: var(--amber);
@@ -292,19 +336,33 @@
   }
 
   .btn {
-    background: var(--signal-soft);
-    border: 1px solid var(--signal);
-    color: var(--signal);
+    width: 26px;
+    height: 26px;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    color: var(--ink-dim);
     font-family: var(--mono);
     font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    padding: 9px 16px;
-    border-radius: 6px;
+    font-weight: 700;
+    line-height: 1;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.15s ease;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+  .btn:hover {
+    border-color: var(--border-mid);
+    color: var(--ink-muted);
+  }
+  .btn.on {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: #05070c;
   }
 </style>

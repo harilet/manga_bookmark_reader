@@ -52,10 +52,10 @@
   }
   .panel-section .section-label {
     font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--ink-dim);
+    color: var(--ink-muted);
   }
 
   .config-fields {

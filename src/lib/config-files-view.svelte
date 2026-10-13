@@ -65,25 +65,32 @@
   }
   .panel-section .section-label {
     font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--ink-dim);
+    color: var(--ink-muted);
   }
 
   .mini-btn {
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--ink-muted);
     background: none;
-    border: 1px solid var(--border-dim);
-    padding: 5px 11px;
-    border-radius: 6px;
+    border: 1px solid var(--border-mid);
+    padding: 6px 13px;
+    border-radius: 4px;
     cursor: pointer;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease,
+      background 0.15s ease;
   }
   .mini-btn:hover {
     color: var(--ink);
-    border-color: var(--border-mid);
+    border-color: var(--ink-muted);
+    background: var(--panel-soft);
   }
 
   .config-fields {
@@ -98,23 +105,27 @@
   }
   .field-label {
     font-family: var(--mono);
-    font-size: 11px;
-    color: var(--ink-muted);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
   }
   .config-fields input {
-    background: var(--panel-soft);
+    background: transparent;
     border: 1px solid var(--border-dim);
     color: var(--ink);
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
     padding: 9px 11px;
-    border-radius: 6px;
+    border-radius: 4px;
     outline: none;
+    transition: border-color 0.15s ease;
   }
   .config-fields input::placeholder {
     color: var(--ink-dim);
   }
   .config-fields input:focus {
-    border-color: var(--border-mid);
+    border-color: var(--signal);
   }
 </style>
