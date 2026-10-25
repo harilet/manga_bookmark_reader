@@ -23,10 +23,10 @@
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="title-slot">
+  <div class="title-slot" data-tauri-drag-region>
     <slot />
   </div>
-  <div class="window-controls">
+  <div class="window-controls" data-tauri-drag-region>
     <button class="hvrBgDark" on:click={onClickReduce}>
       <svg
         xmlns="http://www.w3.org/2000/svg"

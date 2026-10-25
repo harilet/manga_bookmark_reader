@@ -18,7 +18,9 @@
   },
   {
     "site_match": [
-      "mangadex"
+      "mangadex",
+      "comix",
+      "webtoons"
     ],
     "type": "static",
     "value": "1"
@@ -41,13 +43,6 @@
     "page_check": "Prev Chapter",
     "main_check": "Next Chapter",
     "type": "toggle"
-  },
-  {
-    "site_match": [
-      "webtoons"
-    ],
-    "type": "static",
-    "value": "1"
   },
   {
     "site_match": [
@@ -113,12 +108,6 @@
     "type": "toggle",
     "page_check": "arrow-left.svg",
     "main_check": "Next chapter"
-  },
-  {
-    "site_match": [
-      "comix.to"
-    ],
-    "type": "static"
   },
   {
     "site_match": [
